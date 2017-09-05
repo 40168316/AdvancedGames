@@ -5,11 +5,34 @@
 // Adds sf in front of everything to reference the library
 using namespace sf;
 
-Texture playerSpriteTexture, backgroundTexture, enemySpriteTexture, playerShootingTexture;
+Texture playerSpriteTexture, backgroundTexture, enemySpriteTexture, playerShootingTexture, powerupChestTexture;
 Sprite playerSprite, backgroundSprite, enemySprite;
-Sprite playerShootingSprite;
+Sprite playerShootingSprite, powerupChestSprite;
+Font font;
+Text scoreText, healthText;
 
 bool fire = false;
+bool leftNotAllowed = false;
+bool rightNotAllowed = false;
+bool powerupHide = false;
+int userScore = 0;
+int userHealth = 10;
+
+// Method which displays various user values on the interface
+void setupGameTexts() {
+	scoreText.setFont(font);
+	scoreText.setString("SCORE: " + std::to_string(userScore));
+	scoreText.setCharacterSize(24);
+	scoreText.setFillColor(Color::Black);
+	scoreText.setStyle(Text::Bold | Text::Underlined);
+
+	healthText.setFont(font);
+	healthText.setString("HEALTH: " + std::to_string(userHealth));
+	healthText.setCharacterSize(24);
+	healthText.setFillColor(Color::Black);
+	healthText.setStyle(Text::Bold | Text::Underlined);
+	healthText.setPosition(150.0f, 0.0f);
+}
 
 // Load method which loads all the files required
 void Load() {
@@ -17,7 +40,7 @@ void Load() {
     throw std::invalid_argument("Loading error with sprite!");
   }
 
-  if (!backgroundTexture.loadFromFile("res/img/background.png")) {
+  if (!backgroundTexture.loadFromFile("res/img/background1.png")) {
 	  throw std::invalid_argument("Loading error with background!");
   }
 
@@ -29,13 +52,24 @@ void Load() {
 	  throw std::invalid_argument("Loading error with gunfire!");
   }
 
+  if (!powerupChestTexture.loadFromFile("res/img/chest.png")) {
+	  throw std::invalid_argument("Loading error with chest!");
+  }
+
+  if(!font.loadFromFile("res/fonts/Treamd.ttf")) {
+	  throw std::invalid_argument("Loading error with font!");
+  }
+
   // Set the start position of the user sprite
   playerSprite.setPosition(130.0f, 300.0f);
 
   // Set the scale of the background sprite
-  backgroundSprite.setScale(0.5f, 0.5f);
+  //backgroundSprite.setScale(0.5f, 0.5f);
 
   enemySprite.setPosition(120.f, 5.0f);
+  powerupChestSprite.setPosition(160.0f, 5.0f);
+
+  setupGameTexts();
 }
 
 // Update method which stores a clock and handles the movement of the default user sprite - called while window is open
@@ -53,11 +87,15 @@ void Update() {
   upMovement.y--;
 
   // If keys are pressed then move users sprite
-  if (Keyboard::isKeyPressed(Keyboard::Left)) {
-    move.x--;
+  if (!leftNotAllowed) {
+	  if (Keyboard::isKeyPressed(Keyboard::Left)) {
+		  move.x--;
+	  }
   }
-  if (Keyboard::isKeyPressed(Keyboard::Right)) {
-    move.x++;
+  if (!rightNotAllowed) {
+	  if (Keyboard::isKeyPressed(Keyboard::Right)) {
+		  move.x++;
+	  }
   }
   playerSprite.move(move*300.0f*dt);
 
@@ -71,13 +109,48 @@ void Update() {
   // Move the enemy sprite down the screen
   enemySprite.move(downMovement*100.0f*dt);
 
+  // Move the powerup chest down the screen
+  powerupChestSprite.move(downMovement*150.0f*dt);
+
   // Set the shooting sprite to move up the screen
   playerShootingSprite.move(upMovement*100.0f*dt);
  
-  // Code for collision
-  if (playerShootingSprite.getPosition().x >= enemySprite.getPosition().x && playerShootingSprite.getPosition().x <= (enemySprite.getPosition().x) + 50 &
+  // Code for collision between bullet and enemy sprite
+  if (playerShootingSprite.getPosition().x >= enemySprite.getPosition().x && playerShootingSprite.getPosition().x <= (enemySprite.getPosition().x) + 50 &&
 	  playerShootingSprite.getPosition().y >= enemySprite.getPosition().y && playerShootingSprite.getPosition().y <= (enemySprite.getPosition().y) + 50) {
-	  std::cout << "collision";
+	  std::cout << "collision. DESTROYED";
+	  userScore++;
+  }
+
+  // Code for collision between bullet and enemy sprite
+  if (playerShootingSprite.getPosition().x >= powerupChestSprite.getPosition().x && playerShootingSprite.getPosition().x <= (powerupChestSprite.getPosition().x) + 50 &&
+	  playerShootingSprite.getPosition().y >= powerupChestSprite.getPosition().y && playerShootingSprite.getPosition().y <= (powerupChestSprite.getPosition().y) + 50) {
+	  std::cout << "collision. OBTAINED";
+	  powerupChestSprite.setPosition(0.0f, 0.0f);
+	  powerupHide = true;
+	  userHealth+=5;
+  }
+
+  // Update various labels
+  scoreText.setString("SCORE: " + std::to_string(userScore));
+  healthText.setString("HEALTH: " + std::to_string(userHealth));
+
+  // If statement limiting the player to go to far left
+  if (playerSprite.getPosition().x < 4.0f) {
+	  std::cout << "To far left";
+	  leftNotAllowed = true;
+  }
+  else {
+	  leftNotAllowed = false;
+  }
+
+  // If statement limiting the player from going to far right
+  if (playerSprite.getPosition().x > 270.0f) {
+	  std::cout << "To far right";
+	  rightNotAllowed = true;
+  }
+  else {
+	  rightNotAllowed = false;
   }
 }
 
@@ -89,6 +162,11 @@ void Render(RenderWindow &window) {
 	if (fire) {
 		window.draw(playerShootingSprite);
 	}
+	if (!powerupHide) {
+		window.draw(powerupChestSprite);
+	}
+	window.draw(scoreText);
+	window.draw(healthText);
 }
 
 // Main method which runs everything
@@ -113,6 +191,8 @@ int main() {
   enemySprite.setTexture(enemySpriteTexture);
   
   playerShootingSprite.setTexture(playerShootingTexture);
+
+  powerupChestSprite.setTexture(powerupChestTexture);
   
   while (window.isOpen()) {
     Event event;
