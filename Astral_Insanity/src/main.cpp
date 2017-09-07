@@ -7,7 +7,7 @@
 using namespace sf;
 
 Texture playerSpriteTexture, backgroundTexture, enemySpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture;
-Sprite playerSprite, backgroundSprite, enemySprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, powerupChestSprite;
+Sprite playerSprite, backgroundSprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, powerupChestSprite;
 Font font;
 Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter;
 
@@ -15,16 +15,28 @@ bool leftNotAllowed = false;
 bool rightNotAllowed = false;
 bool powerupObtained = false;
 bool enemyShipHide = false;
-bool hasLoadStartBeenCalled = false;
-bool hasLoadMenuBeenCalled = false;
-bool hasCountDownBeenCalled = false;
-int userScore = 0;
-int userHealth = 10;
-int userBullets = 30;
 
+// Havethe load methods been called
+bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasCountDownBeenCalled = false;
+
+// Used to hold user information
+int userScore = 0, userHealth = 10, userBullets = 30;
+
+// Used for player ship
 Sprite playerShootingSprite[30];
 bool playerShootingSpriteAvailable[30], playerShootingSpriteActive[30];
 
+// Used to detect if player has pressed buttons
+bool isSpacePressed = false;
+
+// Used for police boats
+Sprite policeBoatSprite[30];
+RectangleShape policeBoatRectangle[30];
+int policeBoatHealth[30];
+bool hasPlayerShootingSpriteHitPoliceBoat[30];
+
+
+// Method which gholds the different gamestates
 enum class GameStates
 {
 	STATE_START = 1,
@@ -33,6 +45,316 @@ enum class GameStates
 	STATE_LEVEL = 4,
 	STATE_HIGHSCORES = 5,
 };
+
+// Method which moves the bullets
+void moveTheBullets(Vector2f upMovement, float dt) {
+	// If bullet is active then
+	if (playerShootingSpriteActive[0]) {
+		// Move bullet
+		playerShootingSprite[0].move(upMovement*20.0f*dt);
+		// If bullet is off screen then
+		if (playerShootingSprite[0].getPosition().y < -20.0f) {
+			// Reset bullet posotion
+			playerShootingSprite[0].setPosition(-10.0f, -10.0f);
+			// Make bullet available
+			playerShootingSpriteAvailable[0] = true;
+			// Add one to user bullets 
+			userBullets += 1;
+			// Deactivate bullet
+			playerShootingSpriteActive[0] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[1]) {
+		playerShootingSprite[1].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[1].getPosition().y < -20.0f) {
+			playerShootingSprite[1].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[1] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[1] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[2]) {
+		playerShootingSprite[2].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[2].getPosition().y < -20.0f) {
+			playerShootingSprite[2].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[2] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[2] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[3]) {
+		playerShootingSprite[3].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[3].getPosition().y < -20.0f) {
+			playerShootingSprite[3].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[3] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[3] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[4]) {
+		playerShootingSprite[4].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[4].getPosition().y < -20.0f) {
+			playerShootingSprite[4].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[4] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[4] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[5]) {
+		playerShootingSprite[5].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[5].getPosition().y < -20.0f) {
+			playerShootingSprite[5].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[5] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[5] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[6]) {
+		playerShootingSprite[6].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[6].getPosition().y < -20.0f) {
+			playerShootingSprite[6].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[6] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[6] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[7]) {
+		playerShootingSprite[7].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[7].getPosition().y < -20.0f) {
+			playerShootingSprite[7].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[7] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[7] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[8]) {
+		playerShootingSprite[8].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[8].getPosition().y < -20.0f) {
+			playerShootingSprite[8].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[8] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[8] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[9]) {
+		playerShootingSprite[9].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[9].getPosition().y < -20.0f) {
+			playerShootingSprite[9].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[9] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[9] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[10]) {
+		playerShootingSprite[10].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[10].getPosition().y < -20.0f) {
+			playerShootingSprite[10].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[10] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[10] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[11]) {
+		playerShootingSprite[11].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[11].getPosition().y < -20.0f) {
+			playerShootingSprite[11].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[11] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[11] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[12]) {
+		playerShootingSprite[12].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[12].getPosition().y < -20.0f) {
+			playerShootingSprite[12].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[12] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[12] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[13]) {
+		playerShootingSprite[13].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[13].getPosition().y < -20.0f) {
+			playerShootingSprite[13].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[13] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[13] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[14]) {
+		playerShootingSprite[14].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[14].getPosition().y < -20.0f) {
+			playerShootingSprite[14].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[14] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[14] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[15]) {
+		playerShootingSprite[15].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[15].getPosition().y < -20.0f) {
+			playerShootingSprite[15].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[15] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[15] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[16]) {
+		playerShootingSprite[16].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[16].getPosition().y < -20.0f) {
+			playerShootingSprite[16].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[16] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[16] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[17]) {
+		playerShootingSprite[17].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[17].getPosition().y < -20.0f) {
+			playerShootingSprite[17].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[17] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[17] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[18]) {
+		playerShootingSprite[18].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[18].getPosition().y < -20.0f) {
+			playerShootingSprite[18].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[18] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[18] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[19]) {
+		playerShootingSprite[19].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[19].getPosition().y < -20.0f) {
+			playerShootingSprite[19].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[19] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[19] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[20]) {
+		playerShootingSprite[20].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[20].getPosition().y < -20.0f) {
+			playerShootingSprite[20].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[20] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[20] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[21]) {
+		playerShootingSprite[21].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[21].getPosition().y < -20.0f) {
+			playerShootingSprite[21].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[21] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[21] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[22]) {
+		playerShootingSprite[22].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[22].getPosition().y < -20.0f) {
+			playerShootingSprite[22].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[22] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[22] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[23]) {
+		playerShootingSprite[23].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[23].getPosition().y < -20.0f) {
+			playerShootingSprite[23].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[23] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[23] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[24]) {
+		playerShootingSprite[24].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[24].getPosition().y < -20.0f) {
+			playerShootingSprite[24].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[24] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[24] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[25]) {
+		playerShootingSprite[25].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[25].getPosition().y < -20.0f) {
+			playerShootingSprite[25].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[25] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[25] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[26]) {
+		playerShootingSprite[26].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[26].getPosition().y < -20.0f) {
+			playerShootingSprite[26].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[26] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[26] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[27]) {
+		playerShootingSprite[27].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[27].getPosition().y < -20.0f) {
+			playerShootingSprite[27].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[27] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[27] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[28]) {
+		playerShootingSprite[28].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[28].getPosition().y < -20.0f) {
+			playerShootingSprite[28].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[28] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[28] = false;
+		}
+	}
+
+	if (playerShootingSpriteActive[29]) {
+		playerShootingSprite[29].move(upMovement*20.0f*dt);
+		if (playerShootingSprite[29].getPosition().y < -20.0f) {
+			playerShootingSprite[29].setPosition(-10.0f, -10.0f);
+			playerShootingSpriteAvailable[29] = true;
+			userBullets += 1;
+			playerShootingSpriteActive[29] = false;
+		}
+	}
+}
 
 // Method which displays various user values on the interface
 void setupStartTexts() {
@@ -158,17 +480,35 @@ void LoadStart() {
 
   // Set the start position of the user sprite
   playerSprite.setPosition(130.0f, 300.0f);
-  playerSprite.setScale(1.1f, 1.1f);
+  //playerSprite.setScale(1.1f, 1.1f);
 
-  enemySprite.setPosition(120.f, 5.0f);
   powerupChestSprite.setPosition(160.0f, 5.0f);
 
-  // Set the position to off the screen
+  float startingDistancesY[50];
+  for (int i = 0; i < 50; i++) {
+	  startingDistancesY[i] = 100.0f + (i*60.0f);
+	  std::cout << startingDistancesY[i] << std::endl;
+  }
+
+  float startingDistancesX[6] = { 30.0f, 82.0f, 134.0f, 186.0f, 238.0f, 290.0f, };
+
+  // Setup police boat
+  for (int i = 0; i < 30; i++) {
+	  int x = rand() % 5;
+	  int y = rand() % 50;
+	  policeBoatSprite[i].setPosition(startingDistancesX[x],- (startingDistancesY[y]));
+	  policeBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
+	  policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+
+  }
+  
+  // Set the position to off the players bullets of screen
   for (int i = 0; i < 30; i++) {
 	  playerShootingSprite[i].setPosition(-10.0f, -10.0f);
 	  playerShootingSpriteAvailable[i] = true;
   }
 
+  // Setup game texts
   setupStartTexts();
 }
 
@@ -203,69 +543,98 @@ void UpdateStart() {
   if (!leftNotAllowed) {
 	  if (Keyboard::isKeyPressed(Keyboard::Left)) {
 		  move.x--;
+		  //std::cout << "left";
 	  }
   }
   if (!rightNotAllowed) {
 	  if (Keyboard::isKeyPressed(Keyboard::Right)) {
 		  move.x++;
+		  //std::cout << "right";
 	  }
   }
-  playerSprite.move(move*300.0f*dt);
+  playerSprite.move(move*100.f*dt);
 
-  // If space is pressed set fire to true
-  if (Keyboard::isKeyPressed(Keyboard::Space)) {
-	
-	// For all bullets
-	for (int i = 0; i < 30; i++) {
-		// If bullet is avaiable - default true
-		if (playerShootingSpriteAvailable[i] == true)
-		{
-			// Set bullet to active
-			playerShootingSpriteActive[i] = true;
-			// Set position to boat
-			playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 18.0f, (playerSprite.getPosition().y) - 20.0f);
-			std::cout << i;
-			// Set bullet to not available
-			playerShootingSpriteAvailable[i] = false;
-			// Lower the users bullet count
-			//userBullets -= 1;
-			// break as bullet has been selected
-			break;
-		}
-	}
+  // If space is not currently pressed
+  if (isSpacePressed == false) {
+	  // If space is pressed 
+	  if (Keyboard::isKeyPressed(Keyboard::Space)) {
+		  // Set boolean to true
+		  isSpacePressed = true;
+		  // For all bullets
+		  for (int i = 0; i < 30; i++) {
+			  // If bullet is avaiable - default true
+			  if (playerShootingSpriteAvailable[i] == true)
+			  {
+				  // Set bullet to active
+				  playerShootingSpriteActive[i] = true;
+				  // Set position to boat
+				  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 18.0f, (playerSprite.getPosition().y) - 20.0f);
+				  // Print bullet
+				  std::cout << i << std::endl;
+				  // Set bullet to not available
+				  playerShootingSpriteAvailable[i] = false;
+				  // Lower the users bullet count
+				  userBullets -= 1;
+				  // break as bullet has been selected
+				  break;
+			  }
+		  }
+	  }
   }
 
-	// Move the first 5 bullets
-	if (playerShootingSpriteActive[0]) {
-		playerShootingSprite[0].move(upMovement*20.0f*dt);
-	}
-	if (playerShootingSpriteActive[1]) {
-		playerShootingSprite[1].move(upMovement*20.0f*dt);
-	}
-	if (playerShootingSpriteActive[2]) {
-		playerShootingSprite[2].move(upMovement*20.0f*dt);
-	}
-	if (playerShootingSpriteActive[3]) {
-		playerShootingSprite[3].move(upMovement*20.0f*dt);
-	}
-	if (playerShootingSpriteActive[4]) {
-		playerShootingSprite[4].move(upMovement*20.0f*dt);
+	// If space bar is realised - set to false
+	if (!Keyboard::isKeyPressed(Keyboard::Space)) {
+		isSpacePressed = false;
 	}
 
+	// Method which updates the bullets position
+	moveTheBullets(upMovement, dt);
 
-  // Move the enemy sprite down the screen
-  enemySprite.move(downMovement*25.0f*dt);
+	for (int i = 0; i < 30; i++) {
+		policeBoatSprite[i].move(downMovement*25.0f*dt);
+		policeBoatRectangle[i].move(downMovement*25.0f*dt);
+	}  
 
   // Move the powerup chest down the screen
   powerupChestSprite.move(downMovement*50.0f*dt);
+  
+  // Double for loop - one boats and other for bullets
+	for (int i = 0; i < 30; i++) {
+		for (int j = 0; j < 30; j++){
+			// If the police boat contains the bullet then
+			if (policeBoatRectangle[j].getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
+				// Set bool to true
+				//hasPlayerShootingSpriteHitPoliceBoat[0] = true;
+				// Deducted 5 health
+				policeBoatHealth[j] -= 5;
+				// Reset bullet posotion
+				playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+				// Make bullet available
+				playerShootingSpriteAvailable[i] = true;
+				// Add one to user bullets 
+				userBullets += 1;
+				// Deactivate bullet
+				playerShootingSpriteActive[i] = false;
+				// Print 
+				std::cout << policeBoatHealth[j] << " I am under attack" << std::endl;
+				// If boat has been hit by 4 bullets
+				if (policeBoatHealth[j] < -18) {
+					// Reset position
+					policeBoatSprite[j].setPosition(-50.0f, -10.0f);
+					// Reset rectangle
+					policeBoatRectangle[j].setPosition(-10.0f, -10.0f);
+					// Print
+					std::cout << "Police boat destroyed "<< j << std::endl;
+					// Award user score
+					userScore += 10;
+					// Break for loop - goto allows double break and skips to label
+					goto enloop;
+				}
+			}
+		}
+	}
  
-  // Code for collision between bullet and enemy sprite
-  if (playerShootingSprite[0].getPosition().x >= enemySprite.getPosition().x && playerShootingSprite[0].getPosition().x <= (enemySprite.getPosition().x) + 41 &&
-	  playerShootingSprite[0].getPosition().y >= enemySprite.getPosition().y && playerShootingSprite[0].getPosition().y <= (enemySprite.getPosition().y) + 41) {
-	  std::cout << "collision. DESTROYED";
-	  userScore++;
-  }
-
+	enloop:
   // Code for collision between bullet and powerup sprite
   if (playerShootingSprite[0].getPosition().x >= powerupChestSprite.getPosition().x && playerShootingSprite[0].getPosition().x <= (powerupChestSprite.getPosition().x) + 41 &&
 	  playerShootingSprite[0].getPosition().y >= powerupChestSprite.getPosition().y && playerShootingSprite[0].getPosition().y <= (powerupChestSprite.getPosition().y) + 41) {
@@ -284,6 +653,7 @@ void UpdateStart() {
 	  userHealth += 5;
   }
 
+  /*
   // Code collision between enemy ship and player ship
   if (playerSprite.getPosition().x >= enemySprite.getPosition().x && playerSprite.getPosition().x <= (enemySprite.getPosition().x) + 41 &&
 	  playerSprite.getPosition().y >= enemySprite.getPosition().y && playerSprite.getPosition().y <= (enemySprite.getPosition().y) + 41) {
@@ -291,6 +661,7 @@ void UpdateStart() {
 	  userHealth -= 10;
 	  enemyShipHide = true;
   }
+  */
 
   // Update various labels
   scoreText.setString("SCORE: " + std::to_string(userScore));
@@ -338,13 +709,12 @@ void RenderStart(RenderWindow &window) {
 	window.draw(playerSprite);
 	for (int i = 0; i < 30; i++) {
 		window.draw(playerShootingSprite[i]);
+		window.draw(policeBoatSprite[i]);
 	}
 	if (!powerupObtained) {
 		window.draw(powerupChestSprite);
 	}
-	if (!enemyShipHide) {
-		window.draw(enemySprite);
-	}
+	
 	window.draw(scoreText);
 	window.draw(healthText);
 	window.draw(bulletsAvailableCounter);
@@ -451,9 +821,9 @@ int main() {
 			// Set the various textures
 			backgroundSprite.setTexture(backgroundTexture);
 			playerSprite.setTexture(playerSpriteTexture);
-			enemySprite.setTexture(enemySpriteTexture);
 			for (int i = 0; i < 30; i++) {
 				playerShootingSprite[i].setTexture(playerShootingTexture);
+				policeBoatSprite[i].setTexture(enemySpriteTexture);
 			}
 			powerupChestSprite.setTexture(powerupChestTexture);
 
