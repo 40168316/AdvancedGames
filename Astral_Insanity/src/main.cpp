@@ -7,12 +7,10 @@
 using namespace sf;
 
 Texture playerSpriteTexture, backgroundTexture, enemySpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture;
-Sprite playerSprite, backgroundSprite, enemySprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite;
-Sprite playerShootingSprite[30], powerupChestSprite;
+Sprite playerSprite, backgroundSprite, enemySprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, powerupChestSprite;
 Font font;
 Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter;
 
-bool fire = false;
 bool leftNotAllowed = false;
 bool rightNotAllowed = false;
 bool powerupObtained = false;
@@ -20,10 +18,12 @@ bool enemyShipHide = false;
 bool hasLoadStartBeenCalled = false;
 bool hasLoadMenuBeenCalled = false;
 bool hasCountDownBeenCalled = false;
-bool bulletavailable[30];
 int userScore = 0;
 int userHealth = 10;
 int userBullets = 30;
+
+Sprite playerShootingSprite[30];
+bool playerShootingSpriteAvailable[30], playerShootingSpriteActive[30];
 
 enum class GameStates
 {
@@ -128,10 +128,6 @@ void LoadMenu(int winX, int winY) {
 	exitButtonMenuSprite.scale(4.0f, 0.9f);
 
 	setupMenuTexts(winX, winY);
-
-	for (int i = 0; i < 30; i++) {
-		bulletavailable[i] = true;
-	}
 }
 
 // Load method which loads all the files required
@@ -167,21 +163,15 @@ void LoadStart() {
   enemySprite.setPosition(120.f, 5.0f);
   powerupChestSprite.setPosition(160.0f, 5.0f);
 
+  // Set the position to off the screen
   for (int i = 0; i < 30; i++) {
-	  playerShootingSprite[i].setPosition(0.0f, -10.0f);
+	  playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+	  playerShootingSpriteAvailable[i] = true;
   }
 
   setupStartTexts();
 }
 
-// Method which checks if the there is a bullet avaiable
-bool isTheNextBulletAvailable(int i) {
-	// If bullet is out of view
-	if (playerShootingSprite[i].getPosition().y < 0.0f) {
-		// Reset bullet availability to true
-		 return bulletavailable[i] = true;
-	}
-}
 
 void UpdateMenu() {
 	static sf::Clock clock;
@@ -224,21 +214,44 @@ void UpdateStart() {
 
   // If space is pressed set fire to true
   if (Keyboard::isKeyPressed(Keyboard::Space)) {
-	  fire = true;
-	  for (int i = 0; i < 30; i++) {
-		  if (isTheNextBulletAvailable(i) == true) {
-			  // Set the bullet to the position of the sprite - some reason I have to add to x value to get it to line up - TODO
-			  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 18.0f, (playerSprite.getPosition().y) - 20.0f);
-			  bulletavailable[i] = false;
-			  userBullets--;
+	
+	// For all bullets
+	for (int i = 0; i < 30; i++) {
+		// If bullet is avaiable - default true
+		if (playerShootingSpriteAvailable[i] == true)
+		{
+			// Set bullet to active
+			playerShootingSpriteActive[i] = true;
+			// Set position to boat
+			playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 18.0f, (playerSprite.getPosition().y) - 20.0f);
+			std::cout << i;
+			// Set bullet to not available
+			playerShootingSpriteAvailable[i] = false;
+			// Lower the users bullet count
+			//userBullets -= 1;
+			// break as bullet has been selected
+			break;
 		}
-	  }
+	}
   }
 
-  if (fire) {
-	  // Set the shooting sprite to move up the screen
-	  playerShootingSprite[0].move(upMovement*100.0f*dt);
-  }
+	// Move the first 5 bullets
+	if (playerShootingSpriteActive[0]) {
+		playerShootingSprite[0].move(upMovement*20.0f*dt);
+	}
+	if (playerShootingSpriteActive[1]) {
+		playerShootingSprite[1].move(upMovement*20.0f*dt);
+	}
+	if (playerShootingSpriteActive[2]) {
+		playerShootingSprite[2].move(upMovement*20.0f*dt);
+	}
+	if (playerShootingSpriteActive[3]) {
+		playerShootingSprite[3].move(upMovement*20.0f*dt);
+	}
+	if (playerShootingSpriteActive[4]) {
+		playerShootingSprite[4].move(upMovement*20.0f*dt);
+	}
+
 
   // Move the enemy sprite down the screen
   enemySprite.move(downMovement*25.0f*dt);
@@ -323,10 +336,8 @@ void RenderMenu(RenderWindow &window) {
 void RenderStart(RenderWindow &window) { 
 	window.draw(backgroundSprite);
 	window.draw(playerSprite);
-	if (fire) {
-		for (int i = 0; i < 30; i++) {
-			window.draw(playerShootingSprite[i]);
-		}
+	for (int i = 0; i < 30; i++) {
+		window.draw(playerShootingSprite[i]);
 	}
 	if (!powerupObtained) {
 		window.draw(powerupChestSprite);
