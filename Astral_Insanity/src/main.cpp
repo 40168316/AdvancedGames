@@ -7,7 +7,7 @@
 using namespace sf;
 
 Texture playerSpriteTexture, backgroundTexture, enemySpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture;
-Sprite playerSprite, backgroundSprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, powerupChestSprite;
+Sprite backgroundSprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, powerupChestSprite;
 Font font;
 Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter;
 
@@ -20,20 +20,21 @@ bool enemyShipHide = false;
 bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasCountDownBeenCalled = false;
 
 // Used to hold user information
-int userScore = 0, userHealth = 10, userBullets = 30;
+int userScore = 0, userHealth = 100, userBullets = 30;
 
 // Used for player ship
-Sprite playerShootingSprite[30];
+RectangleShape playerSpriteRectangle;
+Sprite playerShootingSprite[30], playerSprite;
 bool playerShootingSpriteAvailable[30], playerShootingSpriteActive[30];
 
 // Used to detect if player has pressed buttons
 bool isSpacePressed = false;
 
 // Used for police boats
-Sprite policeBoatSprite[30];
+Sprite policeBoatSprite[30], policeBoatShootingSprite[30];
 RectangleShape policeBoatRectangle[30];
 int policeBoatHealth[30];
-bool hasPlayerShootingSpriteHitPoliceBoat[30];
+bool hasPlayerShootingSpriteHitPoliceBoat[30], isPoliceBulletActive[30];
 
 
 // Method which gholds the different gamestates
@@ -480,7 +481,8 @@ void LoadStart() {
 
   // Set the start position of the user sprite
   playerSprite.setPosition(130.0f, 300.0f);
-  //playerSprite.setScale(1.1f, 1.1f);
+  playerSpriteRectangle.setPosition(130.0f, 300.0f);
+  playerSpriteRectangle.setSize(Vector2f(41.0f, 50.0f));
 
   powerupChestSprite.setPosition(160.0f, 5.0f);
 
@@ -506,6 +508,11 @@ void LoadStart() {
   for (int i = 0; i < 30; i++) {
 	  playerShootingSprite[i].setPosition(-10.0f, -10.0f);
 	  playerShootingSpriteAvailable[i] = true;
+  }
+
+  for (int i = 0; i < 30; i++) {
+	  policeBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
+	  isPoliceBulletActive[i] = false;
   }
 
   // Setup game texts
@@ -552,7 +559,9 @@ void UpdateStart() {
 		  //std::cout << "right";
 	  }
   }
-  playerSprite.move(move*100.f*dt);
+  // Update player movement
+  playerSprite.move(move*100.0f*dt);
+  playerSpriteRectangle.move(move*100.0f*dt);
 
   // If space is not currently pressed
   if (isSpacePressed == false) {
@@ -568,7 +577,7 @@ void UpdateStart() {
 				  // Set bullet to active
 				  playerShootingSpriteActive[i] = true;
 				  // Set position to boat
-				  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 18.0f, (playerSprite.getPosition().y) - 20.0f);
+				  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 20.0f, (playerSprite.getPosition().y) - 20.0f);
 				  // Print bullet
 				  std::cout << i << std::endl;
 				  // Set bullet to not available
@@ -590,6 +599,7 @@ void UpdateStart() {
 	// Method which updates the bullets position
 	moveTheBullets(upMovement, dt);
 
+	// For loop which moves the police boats
 	for (int i = 0; i < 30; i++) {
 		policeBoatSprite[i].move(downMovement*25.0f*dt);
 		policeBoatRectangle[i].move(downMovement*25.0f*dt);
@@ -634,7 +644,8 @@ void UpdateStart() {
 		}
 	}
  
-	enloop:
+enloop:
+
   // Code for collision between bullet and powerup sprite
   if (playerShootingSprite[0].getPosition().x >= powerupChestSprite.getPosition().x && playerShootingSprite[0].getPosition().x <= (powerupChestSprite.getPosition().x) + 41 &&
 	  playerShootingSprite[0].getPosition().y >= powerupChestSprite.getPosition().y && playerShootingSprite[0].getPosition().y <= (powerupChestSprite.getPosition().y) + 41) {
@@ -653,15 +664,61 @@ void UpdateStart() {
 	  userHealth += 5;
   }
 
-  /*
-  // Code collision between enemy ship and player ship
-  if (playerSprite.getPosition().x >= enemySprite.getPosition().x && playerSprite.getPosition().x <= (enemySprite.getPosition().x) + 41 &&
-	  playerSprite.getPosition().y >= enemySprite.getPosition().y && playerSprite.getPosition().y <= (enemySprite.getPosition().y) + 41) {
-	  std::cout << "collision. BOAT HIT";
-	  userHealth -= 10;
-	  enemyShipHide = true;
+  // If the police boats get off screen
+  for (int i = 0; i < 30; i++) {
+	  if (policeBoatSprite[i].getPosition().y > 400.0f && policeBoatSprite[i].getPosition().x > 30.0f)
+	  {
+		  // Print
+		  std::cout << "The convoy has been hit!!! -10 Health!" << std::endl;
+		  // Lower users health
+		  userHealth -= 10;
+		  // Reset boat position
+		  policeBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  // Reset rectangle
+		  policeBoatRectangle[i].setPosition(-10.0f, -10.0f);
+	  }
   }
-  */
+
+  // If a police boat and player boat direct hit - for all police boats
+  for (int i = 0; i < 30; i++) {
+	  // If the police boat contains player boat then - 20 is added as the midpoint
+	  if (policeBoatRectangle[i].getGlobalBounds().contains(playerSprite.getPosition()+Vector2f(20.0f, 0.0f))) {
+		  // Print
+		  std::cout << "Direct hit! -50 Helath! " << std::endl;
+		  // Lower users health
+		  userHealth -= 50;
+		  // Reset boat position
+		  policeBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  // Reset rectangle
+		  policeBoatRectangle[i].setPosition(-10.0f, -10.0f);
+	  }
+  }
+
+  // Random array of possible starting positions
+  float arr[9] = { 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 80.0f, 90.0f };
+  // Reset random gen
+  srand(time(NULL));
+  // For all police bullets
+  for (int i = 0; i < 30; i++) {
+	  // If bullet isnt active
+	  if (!isPoliceBulletActive[i]) {
+		  // Get random number
+		  int starto = rand() % 8;
+		  // If police boat is great than random number on y axis and in play
+		  if (policeBoatSprite[i].getPosition().y > arr[starto] && policeBoatSprite[i].getPosition().x > 10.0f) {
+			  // Set the bullet to fire from the boat
+			  policeBoatShootingSprite[i].setPosition(Vector2f((policeBoatSprite[i].getPosition().x) + 18.0f, (policeBoatSprite[i].getPosition().y) + 50.0f));
+			  // Set bullet to active
+			  isPoliceBulletActive[i] = true;
+		  }
+	  }
+	  // If bullet is active
+	  else
+	  {
+		  // Update
+		  policeBoatShootingSprite[i].move(downMovement*150.0f*dt);
+	  }
+  }
 
   // Update various labels
   scoreText.setString("SCORE: " + std::to_string(userScore));
@@ -714,7 +771,9 @@ void RenderStart(RenderWindow &window) {
 	if (!powerupObtained) {
 		window.draw(powerupChestSprite);
 	}
-	
+	for (int i = 0; i < 30; i++) {
+		window.draw(policeBoatShootingSprite[i]);
+	}
 	window.draw(scoreText);
 	window.draw(healthText);
 	window.draw(bulletsAvailableCounter);
@@ -824,6 +883,9 @@ int main() {
 			for (int i = 0; i < 30; i++) {
 				playerShootingSprite[i].setTexture(playerShootingTexture);
 				policeBoatSprite[i].setTexture(enemySpriteTexture);
+			}
+			for (int i = 0; i < 30; i++) {
+				policeBoatShootingSprite[i].setTexture(playerShootingTexture);
 			}
 			powerupChestSprite.setTexture(powerupChestTexture);
 
