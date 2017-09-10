@@ -6,21 +6,23 @@
 // Adds sf in front of everything to reference the library
 using namespace sf;
 
-Texture playerSpriteTexture, backgroundTexture, enemySpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture;
-Sprite backgroundSprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, powerupChestSprite;
+Texture playerSpriteTexture, backgroundTexture, policeSpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture, armySpriteTexture;
+Sprite backgroundSprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite;
 Font font;
-Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter;
+Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter, enemyBoatsLeft;
 
-bool leftNotAllowed = false;
-bool rightNotAllowed = false;
-bool powerupObtained = false;
-bool enemyShipHide = false;
+// Used for the gameSystem
+int sysPlayers = 0;
+float sysSpeed = 50.0f;
+
+// Booleans to limit movement
+bool leftNotAllowed = false, rightNotAllowed = false;
 
 // Havethe load methods been called
 bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasCountDownBeenCalled = false;
 
 // Used to hold user information
-int userScore = 0, userHealth = 100, userBullets = 30;
+int userScore = 0, userHealth = 100, userBullets = 30, userRemaingBoats = 60;
 
 // Used for player ship
 RectangleShape playerSpriteRectangle;
@@ -36,6 +38,15 @@ RectangleShape policeBoatRectangle[30];
 int policeBoatHealth[30];
 bool hasPlayerShootingSpriteHitPoliceBoat[30], isPoliceBulletActive[30];
 
+// Used for army boats
+Sprite armyBoatSprite[30], armyBoatShootingSprite[30];
+RectangleShape armyBoatRectangle[30];
+int armyBoatHealth[30];
+bool hasPlayerShootingSpriteHitArmyBoat[30], isArmyBulletActive[30];
+
+// Used for power ups
+Sprite powerupChestSprite;
+RectangleShape powerupChestRectangle;
 
 // Method which gholds the different gamestates
 enum class GameStates
@@ -52,7 +63,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	// If bullet is active then
 	if (playerShootingSpriteActive[0]) {
 		// Move bullet
-		playerShootingSprite[0].move(upMovement*20.0f*dt);
+		playerShootingSprite[0].move(upMovement*sysSpeed*dt);
 		// If bullet is off screen then
 		if (playerShootingSprite[0].getPosition().y < -20.0f) {
 			// Reset bullet posotion
@@ -67,7 +78,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[1]) {
-		playerShootingSprite[1].move(upMovement*20.0f*dt);
+		playerShootingSprite[1].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[1].getPosition().y < -20.0f) {
 			playerShootingSprite[1].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[1] = true;
@@ -77,7 +88,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[2]) {
-		playerShootingSprite[2].move(upMovement*20.0f*dt);
+		playerShootingSprite[2].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[2].getPosition().y < -20.0f) {
 			playerShootingSprite[2].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[2] = true;
@@ -87,7 +98,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[3]) {
-		playerShootingSprite[3].move(upMovement*20.0f*dt);
+		playerShootingSprite[3].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[3].getPosition().y < -20.0f) {
 			playerShootingSprite[3].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[3] = true;
@@ -97,7 +108,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[4]) {
-		playerShootingSprite[4].move(upMovement*20.0f*dt);
+		playerShootingSprite[4].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[4].getPosition().y < -20.0f) {
 			playerShootingSprite[4].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[4] = true;
@@ -107,7 +118,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[5]) {
-		playerShootingSprite[5].move(upMovement*20.0f*dt);
+		playerShootingSprite[5].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[5].getPosition().y < -20.0f) {
 			playerShootingSprite[5].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[5] = true;
@@ -117,7 +128,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[6]) {
-		playerShootingSprite[6].move(upMovement*20.0f*dt);
+		playerShootingSprite[6].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[6].getPosition().y < -20.0f) {
 			playerShootingSprite[6].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[6] = true;
@@ -127,7 +138,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[7]) {
-		playerShootingSprite[7].move(upMovement*20.0f*dt);
+		playerShootingSprite[7].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[7].getPosition().y < -20.0f) {
 			playerShootingSprite[7].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[7] = true;
@@ -137,7 +148,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[8]) {
-		playerShootingSprite[8].move(upMovement*20.0f*dt);
+		playerShootingSprite[8].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[8].getPosition().y < -20.0f) {
 			playerShootingSprite[8].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[8] = true;
@@ -147,7 +158,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[9]) {
-		playerShootingSprite[9].move(upMovement*20.0f*dt);
+		playerShootingSprite[9].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[9].getPosition().y < -20.0f) {
 			playerShootingSprite[9].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[9] = true;
@@ -157,7 +168,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[10]) {
-		playerShootingSprite[10].move(upMovement*20.0f*dt);
+		playerShootingSprite[10].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[10].getPosition().y < -20.0f) {
 			playerShootingSprite[10].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[10] = true;
@@ -167,7 +178,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[11]) {
-		playerShootingSprite[11].move(upMovement*20.0f*dt);
+		playerShootingSprite[11].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[11].getPosition().y < -20.0f) {
 			playerShootingSprite[11].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[11] = true;
@@ -177,7 +188,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[12]) {
-		playerShootingSprite[12].move(upMovement*20.0f*dt);
+		playerShootingSprite[12].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[12].getPosition().y < -20.0f) {
 			playerShootingSprite[12].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[12] = true;
@@ -187,7 +198,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[13]) {
-		playerShootingSprite[13].move(upMovement*20.0f*dt);
+		playerShootingSprite[13].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[13].getPosition().y < -20.0f) {
 			playerShootingSprite[13].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[13] = true;
@@ -197,7 +208,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[14]) {
-		playerShootingSprite[14].move(upMovement*20.0f*dt);
+		playerShootingSprite[14].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[14].getPosition().y < -20.0f) {
 			playerShootingSprite[14].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[14] = true;
@@ -207,7 +218,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[15]) {
-		playerShootingSprite[15].move(upMovement*20.0f*dt);
+		playerShootingSprite[15].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[15].getPosition().y < -20.0f) {
 			playerShootingSprite[15].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[15] = true;
@@ -217,7 +228,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[16]) {
-		playerShootingSprite[16].move(upMovement*20.0f*dt);
+		playerShootingSprite[16].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[16].getPosition().y < -20.0f) {
 			playerShootingSprite[16].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[16] = true;
@@ -227,7 +238,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[17]) {
-		playerShootingSprite[17].move(upMovement*20.0f*dt);
+		playerShootingSprite[17].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[17].getPosition().y < -20.0f) {
 			playerShootingSprite[17].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[17] = true;
@@ -237,7 +248,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[18]) {
-		playerShootingSprite[18].move(upMovement*20.0f*dt);
+		playerShootingSprite[18].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[18].getPosition().y < -20.0f) {
 			playerShootingSprite[18].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[18] = true;
@@ -247,7 +258,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[19]) {
-		playerShootingSprite[19].move(upMovement*20.0f*dt);
+		playerShootingSprite[19].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[19].getPosition().y < -20.0f) {
 			playerShootingSprite[19].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[19] = true;
@@ -257,7 +268,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[20]) {
-		playerShootingSprite[20].move(upMovement*20.0f*dt);
+		playerShootingSprite[20].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[20].getPosition().y < -20.0f) {
 			playerShootingSprite[20].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[20] = true;
@@ -267,7 +278,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[21]) {
-		playerShootingSprite[21].move(upMovement*20.0f*dt);
+		playerShootingSprite[21].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[21].getPosition().y < -20.0f) {
 			playerShootingSprite[21].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[21] = true;
@@ -277,7 +288,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[22]) {
-		playerShootingSprite[22].move(upMovement*20.0f*dt);
+		playerShootingSprite[22].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[22].getPosition().y < -20.0f) {
 			playerShootingSprite[22].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[22] = true;
@@ -287,7 +298,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[23]) {
-		playerShootingSprite[23].move(upMovement*20.0f*dt);
+		playerShootingSprite[23].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[23].getPosition().y < -20.0f) {
 			playerShootingSprite[23].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[23] = true;
@@ -297,7 +308,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[24]) {
-		playerShootingSprite[24].move(upMovement*20.0f*dt);
+		playerShootingSprite[24].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[24].getPosition().y < -20.0f) {
 			playerShootingSprite[24].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[24] = true;
@@ -307,7 +318,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[25]) {
-		playerShootingSprite[25].move(upMovement*20.0f*dt);
+		playerShootingSprite[25].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[25].getPosition().y < -20.0f) {
 			playerShootingSprite[25].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[25] = true;
@@ -317,7 +328,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[26]) {
-		playerShootingSprite[26].move(upMovement*20.0f*dt);
+		playerShootingSprite[26].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[26].getPosition().y < -20.0f) {
 			playerShootingSprite[26].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[26] = true;
@@ -327,7 +338,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[27]) {
-		playerShootingSprite[27].move(upMovement*20.0f*dt);
+		playerShootingSprite[27].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[27].getPosition().y < -20.0f) {
 			playerShootingSprite[27].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[27] = true;
@@ -337,7 +348,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[28]) {
-		playerShootingSprite[28].move(upMovement*20.0f*dt);
+		playerShootingSprite[28].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[28].getPosition().y < -20.0f) {
 			playerShootingSprite[28].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[28] = true;
@@ -347,7 +358,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[29]) {
-		playerShootingSprite[29].move(upMovement*20.0f*dt);
+		playerShootingSprite[29].move(upMovement*sysSpeed*dt);
 		if (playerShootingSprite[29].getPosition().y < -20.0f) {
 			playerShootingSprite[29].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[29] = true;
@@ -392,6 +403,13 @@ void setupStartTexts() {
 	bulletsAvailableCounter.setFillColor(Color::Black);
 	bulletsAvailableCounter.setStyle(Text::Bold | Text::Underlined);
 	bulletsAvailableCounter.setPosition(0.0f, 360.0f);
+
+	enemyBoatsLeft.setFont(font);
+	enemyBoatsLeft.setString("REMAIN: 60");
+	enemyBoatsLeft.setCharacterSize(24);
+	enemyBoatsLeft.setFillColor(Color::Black);
+	enemyBoatsLeft.setStyle(Text::Bold | Text::Underlined);
+	enemyBoatsLeft.setPosition(200.0f, 360.0f);
 }
 
 void setupMenuTexts(int winX, int winY) {
@@ -463,8 +481,12 @@ void LoadStart() {
 	  throw std::invalid_argument("Loading error with background!");
   }
 
-  if (!enemySpriteTexture.loadFromFile("res/img/police.png")) {
-	  throw std::invalid_argument("Loading error with enemy!");
+  if (!policeSpriteTexture.loadFromFile("res/img/police.png")) {
+	  throw std::invalid_argument("Loading error with poliz!");
+  }
+
+  if (!armySpriteTexture.loadFromFile("res/img/army.png")) {
+	  throw std::invalid_argument("Loading error with army!");
   }
 
   if (!playerShootingTexture.loadFromFile("res/img/smallbullet.png")) {
@@ -485,9 +507,11 @@ void LoadStart() {
   playerSpriteRectangle.setSize(Vector2f(41.0f, 50.0f));
 
   powerupChestSprite.setPosition(160.0f, 5.0f);
+  powerupChestRectangle.setPosition(160.0f, 5.0f);
+  powerupChestRectangle.setSize(Vector2f(50.0f, 50.0f));
 
-  float startingDistancesY[50];
-  for (int i = 0; i < 50; i++) {
+  float startingDistancesY[100];
+  for (int i = 0; i < 100; i++) {
 	  startingDistancesY[i] = 100.0f + (i*60.0f);
 	  std::cout << startingDistancesY[i] << std::endl;
   }
@@ -497,10 +521,20 @@ void LoadStart() {
   // Setup police boat
   for (int i = 0; i < 30; i++) {
 	  int x = rand() % 5;
-	  int y = rand() % 50;
+	  int y = rand() % 100;
 	  policeBoatSprite[i].setPosition(startingDistancesX[x],- (startingDistancesY[y]));
 	  policeBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
 	  policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+
+  }
+
+  // Setup army boats
+  for (int i = 0; i < 30; i++) {
+	  int x = rand() % 5;
+	  int y = rand() % 100;
+	  armyBoatSprite[i].setPosition(startingDistancesX[x], -(startingDistancesY[y]));
+	  armyBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
+	  armyBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
 
   }
   
@@ -513,6 +547,11 @@ void LoadStart() {
   for (int i = 0; i < 30; i++) {
 	  policeBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
 	  isPoliceBulletActive[i] = false;
+  }
+
+  for (int i = 0; i < 30; i++) {
+	  armyBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
+	  isArmyBulletActive[i] = false;
   }
 
   // Setup game texts
@@ -601,20 +640,25 @@ void UpdateStart() {
 
 	// For loop which moves the police boats
 	for (int i = 0; i < 30; i++) {
-		policeBoatSprite[i].move(downMovement*25.0f*dt);
-		policeBoatRectangle[i].move(downMovement*25.0f*dt);
+		policeBoatSprite[i].move(downMovement*sysSpeed*dt);
+		policeBoatRectangle[i].move(downMovement*sysSpeed*dt);
 	}  
 
+	// For loop which moves the army boats
+	for (int i = 0; i < 30; i++) {
+		armyBoatSprite[i].move(downMovement*sysSpeed*dt);
+		armyBoatRectangle[i].move(downMovement*sysSpeed*dt);
+	}
+
   // Move the powerup chest down the screen
-  powerupChestSprite.move(downMovement*50.0f*dt);
+  powerupChestSprite.move(downMovement*sysSpeed*dt);
+  powerupChestRectangle.move(downMovement*sysSpeed*dt);
   
   // Double for loop - one boats and other for bullets
 	for (int i = 0; i < 30; i++) {
 		for (int j = 0; j < 30; j++){
 			// If the police boat contains the bullet then
 			if (policeBoatRectangle[j].getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
-				// Set bool to true
-				//hasPlayerShootingSpriteHitPoliceBoat[0] = true;
 				// Deducted 5 health
 				policeBoatHealth[j] -= 5;
 				// Reset bullet posotion
@@ -633,6 +677,8 @@ void UpdateStart() {
 					policeBoatSprite[j].setPosition(-50.0f, -10.0f);
 					// Reset rectangle
 					policeBoatRectangle[j].setPosition(-10.0f, -10.0f);
+					// Lower counter
+					userRemaingBoats -= 1;
 					// Print
 					std::cout << "Police boat destroyed "<< j << std::endl;
 					// Award user score
@@ -646,27 +692,65 @@ void UpdateStart() {
  
 enloop:
 
-  // Code for collision between bullet and powerup sprite
-  if (playerShootingSprite[0].getPosition().x >= powerupChestSprite.getPosition().x && playerShootingSprite[0].getPosition().x <= (powerupChestSprite.getPosition().x) + 41 &&
-	  playerShootingSprite[0].getPosition().y >= powerupChestSprite.getPosition().y && playerShootingSprite[0].getPosition().y <= (powerupChestSprite.getPosition().y) + 41) {
-	  std::cout << "collision. OBTAINED";
-	  powerupChestSprite.setPosition(0.0f, 0.0f);
-	  powerupObtained = true;
-	  userHealth+=5;
-  }
+	// Double for loop - one boats and other for bullets
+	for (int i = 0; i < 30; i++) {
+		for (int j = 0; j < 30; j++) {
+			// If the police boat contains the bullet then
+			if (armyBoatRectangle[j].getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
+				// Deducted 5 health
+				armyBoatHealth[j] -= 5;
+				// Reset bullet posotion
+				playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+				// Make bullet available
+				playerShootingSpriteAvailable[i] = true;
+				// Add one to user bullets 
+				userBullets += 1;
+				// Deactivate bullet
+				playerShootingSpriteActive[i] = false;
+				// Print 
+				std::cout << armyBoatHealth[j] << " I am under attack" << std::endl;
+				// If boat has been hit by 6 bullets
+				if (armyBoatHealth[j] < -28) {
+					// Reset position
+					armyBoatSprite[j].setPosition(-50.0f, -10.0f);
+					// Reset rectangle
+					armyBoatRectangle[j].setPosition(-10.0f, -10.0f);
+					// Print
+					std::cout << "Army boat destroyed " << j << std::endl;
+					// Lower counter
+					userRemaingBoats -= 1;
+					// Award user score
+					userScore += 10;
+					// Break for loop - goto allows double break and skips to label
+					goto enloop1;
+				}
+			}
+		}
+	}
 
-  // Code for collision between player ship and powerup sprite
-  if (playerSprite.getPosition().x >= powerupChestSprite.getPosition().x && playerSprite.getPosition().x <= (powerupChestSprite.getPosition().x) + 41 &&
-	  playerSprite.getPosition().y >= powerupChestSprite.getPosition().y && playerSprite.getPosition().y <= (powerupChestSprite.getPosition().y) + 41) {
-	  std::cout << "collision. POWERUP";
-	  powerupChestSprite.setPosition(0.0f, 0.0f);
-	  powerupObtained = true;
-	  userHealth += 5;
-  }
+enloop1:
+
+	// Code for collision between bullet and powerup sprite
+	for (int i = 0; i < 30; i++) {
+		if (powerupChestRectangle.getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
+			std::cout << "Powerup obtained." << std::endl;
+			powerupChestSprite.setPosition(-90.0f, -90.0f);
+			powerupChestRectangle.setPosition(-90.0f, -90.0f);
+			userHealth += 25;
+			playerShootingSprite[i].setPosition(Vector2f(-10.0f, -10.0f));
+		}
+	}
+
+	// If player collides with powerup
+	if (playerSpriteRectangle.getGlobalBounds().intersects(powerupChestRectangle.getGlobalBounds())) {
+		powerupChestSprite.setPosition(-90.0f, -90.0f);
+		powerupChestRectangle.setPosition(-90.0f, -90.0f);
+		userHealth += 10;
+	}
 
   // If the police boats get off screen
   for (int i = 0; i < 30; i++) {
-	  if (policeBoatSprite[i].getPosition().y > 400.0f && policeBoatSprite[i].getPosition().x > 30.0f)
+	  if (policeBoatSprite[i].getPosition().y > 400.0f && policeBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
 		  std::cout << "The convoy has been hit!!! -10 Health!" << std::endl;
@@ -675,7 +759,26 @@ enloop:
 		  // Reset boat position
 		  policeBoatSprite[i].setPosition(-50.0f, -10.0f);
 		  // Reset rectangle
-		  policeBoatRectangle[i].setPosition(-10.0f, -10.0f);
+		  policeBoatRectangle[i].setPosition(-50.0f, -10.0f);
+		  // Lower counter
+		  userRemaingBoats -= 1;
+	  }
+  }
+
+  // If the army boats get off screen
+  for (int i = 0; i < 30; i++) {
+	  if (armyBoatSprite[i].getPosition().y > 400.0f && armyBoatSprite[i].getPosition().x > 29.0f)
+	  {
+		  // Print
+		  std::cout << "The convoy has been hit!!! -20 Health!" << std::endl;
+		  // Lower users health
+		  userHealth -= 20;
+		  // Reset boat position
+		  armyBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  // Reset rectangle
+		  armyBoatRectangle[i].setPosition(-50.0f, -10.0f);
+		  // Lower counter
+		  userRemaingBoats -= 1;
 	  }
   }
 
@@ -691,6 +794,25 @@ enloop:
 		  policeBoatSprite[i].setPosition(-50.0f, -10.0f);
 		  // Reset rectangle
 		  policeBoatRectangle[i].setPosition(-10.0f, -10.0f);
+		  // Lower counter
+		  userRemaingBoats -= 1;
+	  }
+  }
+
+  // If a army boat and player boat direct hit - for all police boats
+  for (int i = 0; i < 30; i++) {
+	  // If the army boat contains player boat then - 20 is added as the midpoint
+	  if (armyBoatRectangle[i].getGlobalBounds().contains(playerSprite.getPosition() + Vector2f(20.0f, 0.0f))) {
+		  // Print
+		  std::cout << "Direct hit! -50 Helath! " << std::endl;
+		  // Lower users health
+		  userHealth -= 50;
+		  // Reset boat position
+		  armyBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  // Reset rectangle
+		  armyBoatRectangle[i].setPosition(-10.0f, -10.0f);
+		  // Lower counter
+		  userRemaingBoats -= 1;
 	  }
   }
 
@@ -720,10 +842,59 @@ enloop:
 	  }
   }
 
+  // For all army bullets
+  for (int i = 0; i < 30; i++) {
+	  // If bullet isnt active
+	  if (!isArmyBulletActive[i]) {
+		  // Get random number
+		  int starto = rand() % 8;
+		  // If police boat is great than random number on y axis and in play
+		  if (armyBoatSprite[i].getPosition().y > arr[starto] && armyBoatSprite[i].getPosition().x > 10.0f) {
+			  // Set the bullet to fire from the boat
+			  armyBoatShootingSprite[i].setPosition(Vector2f((armyBoatSprite[i].getPosition().x) + 18.0f, (armyBoatSprite[i].getPosition().y) + 50.0f));
+			  // Set bullet to active
+			  isArmyBulletActive[i] = true;
+		  }
+	  }
+	  // If bullet is active
+	  else
+	  {
+		  // Update
+		  armyBoatShootingSprite[i].move(downMovement*150.0f*dt);
+	  }
+  }
+
+  // For all policebullets
+  for (int i = 0; i < 30; i++) {
+	  // If police bullets hit player boat then
+	  if (playerSpriteRectangle.getGlobalBounds().contains(policeBoatShootingSprite[i].getPosition()+(Vector2f(0.0f, 20.0f)))) {
+		  // Print
+		  std::cout << "Boat hit" << std::endl;
+		  // Lower userHealth by 10
+		  userHealth -= 10;
+		  // Hide missile
+		  policeBoatShootingSprite[i].setPosition(Vector2f(-10.0f, -10.0f));
+	  }
+  }
+
+  // For all army bullets
+  for (int i = 0; i < 30; i++) {
+	  // If police bullets hit player boat then
+	  if (playerSpriteRectangle.getGlobalBounds().contains(armyBoatShootingSprite[i].getPosition() + (Vector2f(0.0f, 20.0f)))) {
+		  // Print
+		  std::cout << "Boat hit" << std::endl;
+		  // Lower userHealth by 10
+		  userHealth -= 10;
+		  // Hide missile
+		  armyBoatShootingSprite[i].setPosition(Vector2f(-10.0f, -10.0f));
+	  }
+  }
+
   // Update various labels
   scoreText.setString("SCORE: " + std::to_string(userScore));
   healthText.setString("HEALTH: " + std::to_string(userHealth));
-  bulletsAvailableCounter.setString("BULLETS: " + std::to_string(userBullets) + " /30");
+  bulletsAvailableCounter.setString("BULLETS: " + std::to_string(userBullets) + "/30");
+  enemyBoatsLeft.setString("REMAIN: " + std::to_string(userRemaingBoats));
 
   // If statement limiting the player to go to far left
   if (playerSprite.getPosition().x < 25.0f) {
@@ -767,14 +938,13 @@ void RenderStart(RenderWindow &window) {
 	for (int i = 0; i < 30; i++) {
 		window.draw(playerShootingSprite[i]);
 		window.draw(policeBoatSprite[i]);
-	}
-	if (!powerupObtained) {
-		window.draw(powerupChestSprite);
-	}
-	for (int i = 0; i < 30; i++) {
 		window.draw(policeBoatShootingSprite[i]);
+		window.draw(armyBoatSprite[i]);
+		window.draw(armyBoatShootingSprite[i]);
 	}
+	window.draw(powerupChestSprite);
 	window.draw(scoreText);
+	window.draw(enemyBoatsLeft);
 	window.draw(healthText);
 	window.draw(bulletsAvailableCounter);
 	window.draw(gameCountDownTimer);
@@ -880,14 +1050,13 @@ int main() {
 			// Set the various textures
 			backgroundSprite.setTexture(backgroundTexture);
 			playerSprite.setTexture(playerSpriteTexture);
+			powerupChestSprite.setTexture(powerupChestTexture);
 			for (int i = 0; i < 30; i++) {
 				playerShootingSprite[i].setTexture(playerShootingTexture);
-				policeBoatSprite[i].setTexture(enemySpriteTexture);
-			}
-			for (int i = 0; i < 30; i++) {
+				policeBoatSprite[i].setTexture(policeSpriteTexture);
+				armyBoatSprite[i].setTexture(armySpriteTexture);
 				policeBoatShootingSprite[i].setTexture(playerShootingTexture);
 			}
-			powerupChestSprite.setTexture(powerupChestTexture);
 
 			if (!hasCountDownBeenCalled) {
 				// Pause Game
