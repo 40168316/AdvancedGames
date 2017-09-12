@@ -2,27 +2,37 @@
 #include <iostream>
 #include <stdexcept>
 #include <windows.h>
+#include <sstream> 
 
 // Adds sf in front of everything to reference the library
 using namespace sf;
 
-Texture playerSpriteTexture, backgroundTexture, policeSpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture, armySpriteTexture;
-Sprite backgroundSprite, backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite;
+Texture playerSpriteTexture, backgroundTexture, policeSpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture, armySpriteTexture, armyShootingTexture, policeShootingTexure;
+Sprite backgroundSprite;
 Font font;
-Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter, enemyBoatsLeft;
+Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, weblinkMenuText, exitMenuText, gameCountDownTimer, bulletsAvailableCounter, enemyBoatsLeft, nameInputOutput;
+
+String nameInput;
+// Used for Main Menu
+Texture startButtonMenuTexture, highscoreButtonMenuTexture, weblinkButtonMenuTexture, exitButtonMenuTexture;
+Sprite backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite;
+RectangleShape  startButtonMenuRect, highscoreButtonMenuRect, weblinkButtonMenuRect, exitButtonMenuRect;
+
+bool key[29];
 
 // Used for the gameSystem
-int sysPlayers = 0;
+int sysPolice = 0, sysArmy = 0, sysLevel = 0;
 float sysSpeed = 50.0f;
 
 // Booleans to limit movement
-bool leftNotAllowed = false, rightNotAllowed = false;
+bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false;
 
-// Havethe load methods been called
-bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasCountDownBeenCalled = false;
+// Have the load methods been called
+bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasGameOverBeenCalled = false, hasHighscoresBeenCalled = false, hasCompleteBeenCalled = false;
+bool hasCountDownBeenCalled = false, userHasNoHealth = false;
 
 // Used to hold user information
-int userScore = 0, userHealth = 100, userBullets = 30, userRemaingBoats = 60;
+int userScore = 0, userHealth = 0, userBullets = 0, userRemaingBoats = 0;
 
 // Used for player ship
 RectangleShape playerSpriteRectangle;
@@ -48,6 +58,25 @@ bool hasPlayerShootingSpriteHitArmyBoat[30], isArmyBulletActive[30];
 Sprite powerupChestSprite;
 RectangleShape powerupChestRectangle;
 
+// Used for game over screen
+Text exitGame;
+Texture gameOverTexture, confirmTexture, enterNameTexture;
+Sprite gameOverSprite, confirmSprite, enterNameSprite;
+RectangleShape confirmRectangle;
+
+// Used for highscores screen
+Texture highscoresTexture, returnTexture, namescoreTexture;
+Sprite highscoresSprite, returnSprite, namescoreSprite;
+RectangleShape returnRectangle;
+String names[20];
+int scores[20];
+Text displayNames[20], displayScores[20];
+
+// Used for level complete screen
+Texture completeMessageTexture, completeNextTexture, completeExitTexture;
+Sprite completeMessage, completeNext, completeExit;
+RectangleShape completeNextRectangle, completeExitRectangle;
+
 // Method which gholds the different gamestates
 enum class GameStates
 {
@@ -56,6 +85,8 @@ enum class GameStates
 	STATE_OPTIONS = 3,
 	STATE_LEVEL = 4,
 	STATE_HIGHSCORES = 5,
+	STATE_GAMEOVER = 6,
+	STATE_COMPLETE = 7,
 };
 
 // Method which moves the bullets
@@ -371,24 +402,18 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 // Method which displays various user values on the interface
 void setupStartTexts() {
 	scoreText.setFont(font);
-	scoreText.setString("SCORE: " + std::to_string(userScore));
+	scoreText.setString("SCORE:");
 	scoreText.setCharacterSize(24);
 	scoreText.setFillColor(Color::Black);
 	scoreText.setStyle(Text::Bold | Text::Underlined);
+	scoreText.setPosition(200.0f, 0.0f);
 
 	healthText.setFont(font);
-	healthText.setString("HEALTH: " + std::to_string(userHealth));
+	healthText.setString("HEALTH: 100");
 	healthText.setCharacterSize(24);
 	healthText.setFillColor(Color::Black);
 	healthText.setStyle(Text::Bold | Text::Underlined);
-	healthText.setPosition(150.0f, 0.0f);
-
-	gameOverText.setFont(font);
-	gameOverText.setString("GAME OVER!!!!!");
-	gameOverText.setCharacterSize(40);
-	gameOverText.setFillColor(Color::Black);
-	gameOverText.setStyle(Text::Bold | Text::Underlined);
-	gameOverText.setPosition(150.0f, 150.0f);
+	healthText.setPosition(10.0f, 0.0f);
 
 	gameCountDownTimer.setFont(font);
 	gameCountDownTimer.setString("READY!");
@@ -402,44 +427,108 @@ void setupStartTexts() {
 	bulletsAvailableCounter.setCharacterSize(24);
 	bulletsAvailableCounter.setFillColor(Color::Black);
 	bulletsAvailableCounter.setStyle(Text::Bold | Text::Underlined);
-	bulletsAvailableCounter.setPosition(0.0f, 360.0f);
+	bulletsAvailableCounter.setPosition(10.0f, 360.0f);
 
 	enemyBoatsLeft.setFont(font);
-	enemyBoatsLeft.setString("REMAIN: 60");
+	enemyBoatsLeft.setString("REMAIN: " + std::to_string(userRemaingBoats));
 	enemyBoatsLeft.setCharacterSize(24);
 	enemyBoatsLeft.setFillColor(Color::Black);
 	enemyBoatsLeft.setStyle(Text::Bold | Text::Underlined);
 	enemyBoatsLeft.setPosition(200.0f, 360.0f);
 }
 
-void setupMenuTexts(int winX, int winY) {
-	startMenuText.setFont(font);
-	startMenuText.setString("START GAME");
-	startMenuText.setCharacterSize(24);
-	startMenuText.setFillColor(Color::Black);
-	startMenuText.setStyle(Text::Bold | Text::Underlined);
-	startMenuText.setPosition(winX/2, 100.0f);
+void LoadComplete(int winX, int winY) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!completeMessageTexture.loadFromFile("res/img/congrats.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!completeNextTexture.loadFromFile("res/img/next.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!completeExitTexture.loadFromFile("res/img/exit.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
 
-	highscoreMenuText.setFont(font);
-	highscoreMenuText.setString("HIGHSCORES");
-	highscoreMenuText.setCharacterSize(24);
-	highscoreMenuText.setFillColor(Color::Black);
-	highscoreMenuText.setStyle(Text::Bold | Text::Underlined);
-	highscoreMenuText.setPosition(winX / 2, 150.0f);
+	completeMessage.setPosition((winX / 4), (winY / 16));
+	completeNext.setPosition((winX / 4), (winY /2));
+	completeExit.setPosition((winX / 4), (winY / 8) + (winY / 2));
+}
 
-	weblinkMenuText.setFont(font);
-	weblinkMenuText.setString("WEBLINK");
-	weblinkMenuText.setCharacterSize(24);
-	weblinkMenuText.setFillColor(Color::Black);
-	weblinkMenuText.setStyle(Text::Bold | Text::Underlined);
-	weblinkMenuText.setPosition(winX / 2, 200.0f);
+void LoadHighscores(int winX, int winY) {
+	std::cout << "LoadHS" << std::endl;
+	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
+		throw std::invalid_argument("Loading error with font!");
+	}
+	if (!highscoresTexture.loadFromFile("res/img/high.png")) {
+		throw std::invalid_argument("Loading error with pic!");
+	}
+	if (!returnTexture.loadFromFile("res/img/return.png")) {
+		throw std::invalid_argument("Loading error with pic!");
+	}
+	if (!namescoreTexture.loadFromFile("res/img/namescore.png")) {
+		throw std::invalid_argument("Loading error with pic!");
+	}
+	/*
+	names[0] = "Sam";
+	names[1] = "John";
+	names[2] = "Mark";
+	names[3] = "Neil";
+	names[4] = "CalumT";
 
-	exitMenuText.setFont(font);
-	exitMenuText.setString("LEAVE GAME");
-	exitMenuText.setCharacterSize(24);
-	exitMenuText.setFillColor(Color::Black);
-	exitMenuText.setStyle(Text::Bold | Text::Underlined);
-	exitMenuText.setPosition(winX / 2, 250.0f);
+	scores[0] = 1;
+	scores[1] = 2;
+	scores[2] = 7;
+	scores[3] = 4;
+	scores[4] = 5;
+	*/
+	int temp;
+	String tempName;
+
+	for (int i = 0; i < 20; i++)
+	{
+		for (int j = 0; j < 20 - 1; j++)
+		{
+			if (scores[j] > scores[j + 1])
+			{
+				//we need to swap
+				temp = scores[j];
+				scores[j] = scores[j + 1];
+				scores[j + 1] = temp;
+
+				tempName = names[j];
+				names[j] = names[j + 1];
+				names[j + 1] = tempName;
+			}
+		}
+	}
+
+	std::reverse(std::begin(scores), std::end(scores));
+	std::reverse(std::begin(names), std::end(names));
+
+	for (int i = 0; i < 5; i++) {
+		displayNames[i].setFont(font);
+		displayNames[i].setString(names[i]);
+		displayNames[i].setCharacterSize(30);
+		displayNames[i].setFillColor(Color::Black);
+		displayNames[i].setPosition((winX / 4), (winY / 4) + (winY / 16) + (i * 35));
+
+		displayScores[i].setFont(font);
+		displayScores[i].setString(std::to_string(scores[i]));
+		displayScores[i].setCharacterSize(30);
+		displayScores[i].setFillColor(Color::Black);
+		displayScores[i].setPosition((winX / 2) + (winX / 16), (winY / 4) + (winY / 16) + (i * 35));
+
+		std::cout << " " << scores[i] << std::endl;
+	}
+
+	highscoresSprite.setPosition((winX/4), (winY/16));
+	namescoreSprite.setPosition((winX/4), (winY/8) + (winY / 16));
+	returnSprite.setPosition((winX/4), (winY/8) + (winY/4) + (winY/2));
 }
 
 void LoadMenu(int winX, int winY) {
@@ -455,111 +544,421 @@ void LoadMenu(int winX, int winY) {
 		throw std::invalid_argument("Loading error with font!");
 	}
 
+	if (!startButtonMenuTexture.loadFromFile("res/img/start.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
+	}
+	if (!highscoreButtonMenuTexture.loadFromFile("res/img/high.png")) {
+		throw std::invalid_argument("Loading error with  button tex!");
+	}
+	if (!weblinkButtonMenuTexture.loadFromFile("res/img/web.png")) {
+		throw std::invalid_argument("Loading error with  button tex!");
+	}
+	if (!exitButtonMenuTexture.loadFromFile("res/img/EXIT.png")) {
+		throw std::invalid_argument("Loading error with  button tex!");
+	}
+
 	// Set position and the scale of all the sprite buttons
-	startButtonMenuSprite.setPosition((winX/2)-10.0f, 100.0f);
-	startButtonMenuSprite.scale(4.0f, 0.9f);
+	startButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) - (winY / 4));
+	
+	highscoreButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) - (winY / 8));
 
-	highscoreButtonMenuSprite.setPosition((winX / 2) - 10.0f, 150.0f);
-	highscoreButtonMenuSprite.scale(4.0f, 0.9f);
+	weblinkButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2));
 
-	weblinkButtonMenuSprite.setPosition((winX / 2) - 10.0f, 200.0f);
-	weblinkButtonMenuSprite.scale(4.0f, 0.9f);
-
-	exitButtonMenuSprite.setPosition((winX / 2) - 10.0f, 250.0f);
-	exitButtonMenuSprite.scale(4.0f, 0.9f);
-
-	setupMenuTexts(winX, winY);
+	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 8));
 }
 
-// Load method which loads all the files required
+void LoadGameOver(int winX, int winY) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+
+	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
+		throw std::invalid_argument("Loading error with font!");
+	}
+
+	if (!gameOverTexture.loadFromFile("res/img/gameover.png")) {
+		throw std::invalid_argument("Loading error with pic!");
+	}
+	if (!confirmTexture.loadFromFile("res/img/confirm.png")) {
+		throw std::invalid_argument("Loading error with pic!");
+	}
+	if (!enterNameTexture.loadFromFile("res/img/name.png")) {
+		throw std::invalid_argument("Loading error with pic!");
+	}
+
+	for (int i = 0; i < 29; i++) {
+		key[i] = false;
+	}
+	
+	nameInputOutput.setFont(font);
+	nameInputOutput.setString("");
+	nameInputOutput.setCharacterSize(30);
+	nameInputOutput.setFillColor(Color::Black);
+	nameInputOutput.setStyle(Text::Bold | Text::Underlined);
+
+	gameOverSprite.setPosition((winX /4), (winY / 8));
+	enterNameSprite.setPosition((winX / 4), (winY / 4));
+	confirmSprite.setPosition((winX / 4), (winY / 2) + (winY / 4));
+	nameInputOutput.setPosition((winX / 4) + (winX / 8), (winY / 2));
+}
+
 void LoadStart() {
-  if (!playerSpriteTexture.loadFromFile("res/img/pirate.png")) {
-    throw std::invalid_argument("Loading error with sprite!");
-  }
+	if (!playerSpriteTexture.loadFromFile("res/img/pirate.png")) {
+		throw std::invalid_argument("Loading error with sprite!");
+	}
 
-  if (!backgroundTexture.loadFromFile("res/img/background1.png")) {
-	  throw std::invalid_argument("Loading error with background!");
-  }
+	if (!backgroundTexture.loadFromFile("res/img/background1.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
 
-  if (!policeSpriteTexture.loadFromFile("res/img/police.png")) {
-	  throw std::invalid_argument("Loading error with poliz!");
-  }
+	if (!policeSpriteTexture.loadFromFile("res/img/police.png")) {
+		throw std::invalid_argument("Loading error with poliz!");
+	}
 
-  if (!armySpriteTexture.loadFromFile("res/img/army.png")) {
-	  throw std::invalid_argument("Loading error with army!");
-  }
+	if (!armySpriteTexture.loadFromFile("res/img/army1.png")) {
+		throw std::invalid_argument("Loading error with army!");
+	}
+	if (!armyShootingTexture.loadFromFile("res/img/armybullet.png")) {
+		throw std::invalid_argument("Loading error with army!");
+	}
+	if (!policeShootingTexure.loadFromFile("res/img/policebullet.png")) {
+		throw std::invalid_argument("Loading error with army!");
+	}
+	if (!playerShootingTexture.loadFromFile("res/img/smallbullet1.png")) {
+		throw std::invalid_argument("Loading error with gunfire!");
+	}
 
-  if (!playerShootingTexture.loadFromFile("res/img/smallbullet.png")) {
-	  throw std::invalid_argument("Loading error with gunfire!");
-  }
+	if (!powerupChestTexture.loadFromFile("res/img/chest1.png")) {
+		throw std::invalid_argument("Loading error with chest!");
+	}
 
-  if (!powerupChestTexture.loadFromFile("res/img/chest.png")) {
-	  throw std::invalid_argument("Loading error with chest!");
-  }
+	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
+		throw std::invalid_argument("Loading error with font!");
+	}
 
-  if(!font.loadFromFile("res/fonts/Treamd.ttf")) {
-	  throw std::invalid_argument("Loading error with font!");
-  }
+	// Set the start position of the user sprite
+	playerSprite.setPosition(130.0f, 300.0f);
+	playerSpriteRectangle.setPosition(130.0f, 300.0f);
+	playerSpriteRectangle.setSize(Vector2f(41.0f, 50.0f));
 
-  // Set the start position of the user sprite
-  playerSprite.setPosition(130.0f, 300.0f);
-  playerSpriteRectangle.setPosition(130.0f, 300.0f);
-  playerSpriteRectangle.setSize(Vector2f(41.0f, 50.0f));
+	float startingDistancesY[100];
+	for (int i = 0; i < 100; i++) {
+		startingDistancesY[i] = 100.0f + (i*60.0f);
+	}
 
-  powerupChestSprite.setPosition(160.0f, 5.0f);
-  powerupChestRectangle.setPosition(160.0f, 5.0f);
-  powerupChestRectangle.setSize(Vector2f(50.0f, 50.0f));
+	float startingDistancesX[6] = { 32.0f, 82.0f, 134.0f, 186.0f, 238.0f, 290.0f, };
+	
+	srand(time(0));
+	// Setup police boat
+	for (int i = 0; i < sysPolice; i++) {
+		int x = rand() % 5;
+		int y = rand() % sysPolice * 2;
+		policeBoatSprite[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+		std::cout << "Police Boat one deployed at: " << policeBoatSprite[1].getPosition().y << std::endl;
+		policeBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
+		policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+	}
 
-  float startingDistancesY[100];
-  for (int i = 0; i < 100; i++) {
-	  startingDistancesY[i] = 100.0f + (i*60.0f);
-	  std::cout << startingDistancesY[i] << std::endl;
-  }
+	// Setup army boats
+	for (int i = 0; i < sysArmy; i++) {
+		int x = rand() % 5;
+		int y = rand() % sysArmy * 2;
+		armyBoatSprite[i].setPosition(startingDistancesX[x], -(startingDistancesY[y]));
+		//std::cout << "Army Boat deployed at: " << startingDistancesX[x] << " -" << startingDistancesY[y] << std::endl;
+		armyBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
+		armyBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+	}
 
-  float startingDistancesX[6] = { 30.0f, 82.0f, 134.0f, 186.0f, 238.0f, 290.0f, };
+	// Set the position to off the players bullets of screen
+	for (int i = 0; i < 30; i++) {
+		playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+		playerShootingSpriteAvailable[i] = true;
+	}
 
-  // Setup police boat
-  for (int i = 0; i < 30; i++) {
-	  int x = rand() % 5;
-	  int y = rand() % 100;
-	  policeBoatSprite[i].setPosition(startingDistancesX[x],- (startingDistancesY[y]));
-	  policeBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
-	  policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+	for (int i = 0; i < sysPolice; i++) {
+		policeBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
+		isPoliceBulletActive[i] = false;
+	}
 
-  }
+	for (int i = 0; i < sysArmy; i++) {
+		armyBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
+		isArmyBulletActive[i] = false;
+	}
 
-  // Setup army boats
-  for (int i = 0; i < 30; i++) {
-	  int x = rand() % 5;
-	  int y = rand() % 100;
-	  armyBoatSprite[i].setPosition(startingDistancesX[x], -(startingDistancesY[y]));
-	  armyBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
-	  armyBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+	int x = rand() % 5;
+	int y = rand() % sysArmy * 2;
 
-  }
-  
-  // Set the position to off the players bullets of screen
-  for (int i = 0; i < 30; i++) {
-	  playerShootingSprite[i].setPosition(-10.0f, -10.0f);
-	  playerShootingSpriteAvailable[i] = true;
-  }
+	powerupChestSprite.setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+	powerupChestRectangle.setPosition(160.0f, 5.0f);
+	powerupChestRectangle.setSize(Vector2f(50.0f, 50.0f));
 
-  for (int i = 0; i < 30; i++) {
-	  policeBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
-	  isPoliceBulletActive[i] = false;
-  }
+	userHealth = 100;
+	userBullets = 30;
 
-  for (int i = 0; i < 30; i++) {
-	  armyBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
-	  isArmyBulletActive[i] = false;
-  }
-
-  // Setup game texts
-  setupStartTexts();
+	// Setup game texts
+	setupStartTexts();
 }
 
+void UpdateGameOver() {
+	static sf::Clock clock;
+	float dt = clock.restart().asSeconds();
+
+	if (nameInput.getSize() < 6) {
+		if (!key[0] && (Keyboard::isKeyPressed(Keyboard::Space))) {
+			std::cout << "Space" << std::endl;
+			nameInput += " ";
+			key[0] = true;
+		}
+		if (!key[1] && (Keyboard::isKeyPressed(Keyboard::A))) {
+			std::cout << "A" << std::endl;
+			nameInput += "A";
+			key[1] = true;
+		}
+		if (!key[2] && (Keyboard::isKeyPressed(Keyboard::B))) {
+			std::cout << "B" << std::endl;
+			nameInput += "B";
+			key[2] = true;
+		}
+		if (!key[3] && (Keyboard::isKeyPressed(Keyboard::C))) {
+			std::cout << "C" << std::endl;
+			nameInput += "C";
+			key[3] = true;
+		}
+		if (!key[4] && (Keyboard::isKeyPressed(Keyboard::D))) {
+			std::cout << "D" << std::endl;
+			nameInput += "D";
+			key[4] = true;
+		}
+		if (!key[5] && (Keyboard::isKeyPressed(Keyboard::E))) {
+			std::cout << "E" << std::endl;
+			nameInput += "E";
+			key[5] = true;
+		}
+		if (!key[6] && (Keyboard::isKeyPressed(Keyboard::F))) {
+			std::cout << "F" << std::endl;
+			nameInput += "F";
+			key[6] = true;
+		}
+		if (!key[7] && (Keyboard::isKeyPressed(Keyboard::G))) {
+			std::cout << "G" << std::endl;
+			nameInput += "G";
+			key[7] = true;
+		}
+		if (!key[8] && (Keyboard::isKeyPressed(Keyboard::H))) {
+			std::cout << "H" << std::endl;
+			nameInput += "H";
+			key[8] = true;
+		}
+		if (!key[9] && (Keyboard::isKeyPressed(Keyboard::I))) {
+			std::cout << "I" << std::endl;
+			nameInput += "I";
+			key[9] = true;
+		}
+		if (!key[10] && (Keyboard::isKeyPressed(Keyboard::J))) {
+			std::cout << "J" << std::endl;
+			nameInput += "J";
+			key[10] = true;
+		}
+		if (!key[11] && (Keyboard::isKeyPressed(Keyboard::K))) {
+			std::cout << "K" << std::endl;
+			nameInput += "K";
+			key[11] = true;
+		}
+		if (!key[12] && (Keyboard::isKeyPressed(Keyboard::L))) {
+			std::cout << "L" << std::endl;
+			nameInput += "L";
+			key[12] = true;
+		}
+		if (!key[13] && (Keyboard::isKeyPressed(Keyboard::M))) {
+			std::cout << "M" << std::endl;
+			nameInput += "M";
+			key[13] = true;
+		}
+		if (!key[14] && (Keyboard::isKeyPressed(Keyboard::N))) {
+			std::cout << "N" << std::endl;
+			nameInput += "N";
+			key[14] = true;
+		}
+		if (!key[15] && (Keyboard::isKeyPressed(Keyboard::O))) {
+			std::cout << "O" << std::endl;
+			nameInput += "O";
+			key[15] = true;
+		}
+		if (!key[16] && (Keyboard::isKeyPressed(Keyboard::P))) {
+			std::cout << "P" << std::endl;
+			nameInput += "P";
+			key[16] = true;
+		}
+		if (!key[17] && (Keyboard::isKeyPressed(Keyboard::Q))) {
+			std::cout << "Q" << std::endl;
+			nameInput += "Q";
+			key[17] = true;
+		}
+		if (!key[18] && (Keyboard::isKeyPressed(Keyboard::R))) {
+			std::cout << "R" << std::endl;
+			nameInput += "R";
+			key[18] = true;
+		}
+		if (!key[19] && (Keyboard::isKeyPressed(Keyboard::S))) {
+			std::cout << "S" << std::endl;
+			nameInput += "S";
+			key[19] = true;
+		}
+		if (!key[20] && (Keyboard::isKeyPressed(Keyboard::T))) {
+			std::cout << "T" << std::endl;
+			nameInput += "T";
+			key[20] = true;
+		}
+		if (!key[21] && (Keyboard::isKeyPressed(Keyboard::U))) {
+			std::cout << "U" << std::endl;
+			nameInput += "U";
+			key[21] = true;
+		}
+		if (!key[22] && (Keyboard::isKeyPressed(Keyboard::V))) {
+			std::cout << "V" << std::endl;
+			nameInput += "V";
+			key[22] = true;
+		}
+		if (!key[23] && (Keyboard::isKeyPressed(Keyboard::W))) {
+			std::cout << "W" << std::endl;
+			nameInput += "W";
+			key[23] = true;
+		}
+		if (!key[24] && (Keyboard::isKeyPressed(Keyboard::X))) {
+			std::cout << "X" << std::endl;
+			nameInput += "X";
+			key[24] = true;
+		}
+		if (!key[25] && (Keyboard::isKeyPressed(Keyboard::Y))) {
+			std::cout << "Y" << std::endl;
+			nameInput += "Y";
+			key[25] = true;
+		}
+		if (!key[26] && (Keyboard::isKeyPressed(Keyboard::Z))) {
+			std::cout << "Z" << std::endl;
+			nameInput += "Z";
+			key[26] = true;
+		}
+	}
+
+	// If name enter contains a character allow removal
+	if (nameInput.getSize() > 0) {
+		if (!key[27] && (Keyboard::isKeyPressed(Keyboard::BackSpace))) {
+			std::cout << "Back" << std::endl;
+			nameInput.erase(nameInput.getSize() - 1, 1);
+			key[27] = true;
+		}
+		if (!key[28] && (Keyboard::isKeyPressed(Keyboard::Delete))) {
+			std::cout << "Back" << std::endl;
+			nameInput.erase(nameInput.getSize() - 1, 1);
+			key[28] = true;
+		}
+	}
+
+	// Output the inputted string
+	nameInputOutput.setString(nameInput);
+
+	// If keys are not pressed then update boolean
+	if (!Keyboard::isKeyPressed(Keyboard::Space)) {
+		key[0] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::A)) {
+		key[1] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::B)) {
+		key[2] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::C)) {
+		key[3] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::D)) {
+		key[4] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::E)) {
+		key[5] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::F)) {
+		key[6] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::G)) {
+		key[7] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::H)) {
+		key[8] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::I)) {
+		key[9] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::J)) {
+		key[10] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::K)) {
+		key[11] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::L)) {
+		key[12] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::M)) {
+		key[13] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::N)) {
+		key[14] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::O)) {
+		key[15] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::P)) {
+		key[16] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::Q)) {
+		key[17] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::R)) {
+		key[18] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::S)) {
+		key[19] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::T)) {
+		key[20] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::U)) {
+		key[21] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::V)) {
+		key[22] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::W)) {
+		key[23] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::X)) {
+		key[24] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::Y)) {
+		key[25] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::Z)) {
+		key[26] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::BackSpace)) {
+		key[27] = false;
+	}
+	if (!Keyboard::isKeyPressed(Keyboard::Delete)) {
+		key[28] = false;
+	}
+}
 
 void UpdateMenu() {
+	static sf::Clock clock;
+	float dt = clock.restart().asSeconds();
+}
+
+void UpdateComplete() {
+	static sf::Clock clock;
+	float dt = clock.restart().asSeconds();
+}
+
+void UpdateHighscores() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
 }
@@ -570,6 +969,7 @@ void UpdateStart() {
   static sf::Clock gameClock;
   float dt = clock.restart().asSeconds();
   float gameTime = gameClock.getElapsedTime().asSeconds();
+
   Vector2f move;
   Vector2f downMovement;
   Vector2f upMovement;
@@ -589,13 +989,11 @@ void UpdateStart() {
   if (!leftNotAllowed) {
 	  if (Keyboard::isKeyPressed(Keyboard::Left)) {
 		  move.x--;
-		  //std::cout << "left";
 	  }
   }
   if (!rightNotAllowed) {
 	  if (Keyboard::isKeyPressed(Keyboard::Right)) {
 		  move.x++;
-		  //std::cout << "right";
 	  }
   }
   // Update player movement
@@ -617,8 +1015,6 @@ void UpdateStart() {
 				  playerShootingSpriteActive[i] = true;
 				  // Set position to boat
 				  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 20.0f, (playerSprite.getPosition().y) - 20.0f);
-				  // Print bullet
-				  std::cout << i << std::endl;
 				  // Set bullet to not available
 				  playerShootingSpriteAvailable[i] = false;
 				  // Lower the users bullet count
@@ -639,13 +1035,16 @@ void UpdateStart() {
 	moveTheBullets(upMovement, dt);
 
 	// For loop which moves the police boats
-	for (int i = 0; i < 30; i++) {
-		policeBoatSprite[i].move(downMovement*sysSpeed*dt);
-		policeBoatRectangle[i].move(downMovement*sysSpeed*dt);
+	for (int i = 0; i < sysPolice; i++) {
+		if (policeBoatSprite[i].getPosition().x > 29.0f) {
+			policeBoatSprite[i].move(Vector2f(0.0f, sysSpeed*dt));
+			std::cout << policeBoatSprite[1].getPosition().y << std::endl;
+			policeBoatRectangle[i].move(Vector2f(0.0f, sysSpeed*dt));
+		}
 	}  
 
 	// For loop which moves the army boats
-	for (int i = 0; i < 30; i++) {
+	for (int i = 0; i < sysArmy; i++) {
 		armyBoatSprite[i].move(downMovement*sysSpeed*dt);
 		armyBoatRectangle[i].move(downMovement*sysSpeed*dt);
 	}
@@ -653,10 +1052,10 @@ void UpdateStart() {
   // Move the powerup chest down the screen
   powerupChestSprite.move(downMovement*sysSpeed*dt);
   powerupChestRectangle.move(downMovement*sysSpeed*dt);
-  
+
   // Double for loop - one boats and other for bullets
 	for (int i = 0; i < 30; i++) {
-		for (int j = 0; j < 30; j++){
+		for (int j = 0; j < sysPolice; j++){
 			// If the police boat contains the bullet then
 			if (policeBoatRectangle[j].getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
 				// Deducted 5 health
@@ -674,13 +1073,13 @@ void UpdateStart() {
 				// If boat has been hit by 4 bullets
 				if (policeBoatHealth[j] < -18) {
 					// Reset position
-					policeBoatSprite[j].setPosition(-50.0f, -10.0f);
+					policeBoatSprite[j].setPosition(-500.0f, -200.0f);
 					// Reset rectangle
-					policeBoatRectangle[j].setPosition(-10.0f, -10.0f);
+					policeBoatRectangle[j].setPosition(-500.0f, -200.0f);
 					// Lower counter
 					userRemaingBoats -= 1;
 					// Print
-					std::cout << "Police boat destroyed "<< j << std::endl;
+					std::cout << "Police boat destroyed 77777"<< j << std::endl;
 					// Award user score
 					userScore += 10;
 					// Break for loop - goto allows double break and skips to label
@@ -694,7 +1093,7 @@ enloop:
 
 	// Double for loop - one boats and other for bullets
 	for (int i = 0; i < 30; i++) {
-		for (int j = 0; j < 30; j++) {
+		for (int j = 0; j < sysArmy; j++) {
 			// If the police boat contains the bullet then
 			if (armyBoatRectangle[j].getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
 				// Deducted 5 health
@@ -708,15 +1107,15 @@ enloop:
 				// Deactivate bullet
 				playerShootingSpriteActive[i] = false;
 				// Print 
-				std::cout << armyBoatHealth[j] << " I am under attack" << std::endl;
+				std::cout << armyBoatHealth[j] << " I am under attack 5555" << std::endl;
 				// If boat has been hit by 6 bullets
 				if (armyBoatHealth[j] < -28) {
 					// Reset position
-					armyBoatSprite[j].setPosition(-50.0f, -10.0f);
+					armyBoatSprite[j].setPosition(-400.0f, -200.0f);
 					// Reset rectangle
-					armyBoatRectangle[j].setPosition(-10.0f, -10.0f);
+					armyBoatRectangle[j].setPosition(-400.0f, -200.0f);
 					// Print
-					std::cout << "Army boat destroyed " << j << std::endl;
+					std::cout << "Army boat destroyed 66666 " << j << std::endl;
 					// Lower counter
 					userRemaingBoats -= 1;
 					// Award user score
@@ -749,11 +1148,11 @@ enloop1:
 	}
 
   // If the police boats get off screen
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysPolice; i++) {
 	  if (policeBoatSprite[i].getPosition().y > 400.0f && policeBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
-		  std::cout << "The convoy has been hit!!! -10 Health!" << std::endl;
+		  std::cout << "The convoy has been hit!!! -10 Health! 2222" << std::endl;
 		  // Lower users health
 		  userHealth -= 10;
 		  // Reset boat position
@@ -766,11 +1165,11 @@ enloop1:
   }
 
   // If the army boats get off screen
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysArmy; i++) {
 	  if (armyBoatSprite[i].getPosition().y > 400.0f && armyBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
-		  std::cout << "The convoy has been hit!!! -20 Health!" << std::endl;
+		  std::cout << "The convoy has been hit!!! -20 Health! 1111" << std::endl;
 		  // Lower users health
 		  userHealth -= 20;
 		  // Reset boat position
@@ -783,11 +1182,11 @@ enloop1:
   }
 
   // If a police boat and player boat direct hit - for all police boats
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysPolice; i++) {
 	  // If the police boat contains player boat then - 20 is added as the midpoint
 	  if (policeBoatRectangle[i].getGlobalBounds().contains(playerSprite.getPosition()+Vector2f(20.0f, 0.0f))) {
 		  // Print
-		  std::cout << "Direct hit! -50 Helath! " << std::endl;
+		  std::cout << "Direct hit! -50 Helath! 3333" << std::endl;
 		  // Lower users health
 		  userHealth -= 50;
 		  // Reset boat position
@@ -800,11 +1199,11 @@ enloop1:
   }
 
   // If a army boat and player boat direct hit - for all police boats
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysArmy; i++) {
 	  // If the army boat contains player boat then - 20 is added as the midpoint
 	  if (armyBoatRectangle[i].getGlobalBounds().contains(playerSprite.getPosition() + Vector2f(20.0f, 0.0f))) {
 		  // Print
-		  std::cout << "Direct hit! -50 Helath! " << std::endl;
+		  std::cout << "Direct hit! -50 Helath! 4444 " << std::endl;
 		  // Lower users health
 		  userHealth -= 50;
 		  // Reset boat position
@@ -819,9 +1218,9 @@ enloop1:
   // Random array of possible starting positions
   float arr[9] = { 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 80.0f, 90.0f };
   // Reset random gen
-  srand(time(NULL));
+
   // For all police bullets
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysPolice; i++) {
 	  // If bullet isnt active
 	  if (!isPoliceBulletActive[i]) {
 		  // Get random number
@@ -843,7 +1242,7 @@ enloop1:
   }
 
   // For all army bullets
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysArmy; i++) {
 	  // If bullet isnt active
 	  if (!isArmyBulletActive[i]) {
 		  // Get random number
@@ -865,7 +1264,7 @@ enloop1:
   }
 
   // For all policebullets
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysPolice; i++) {
 	  // If police bullets hit player boat then
 	  if (playerSpriteRectangle.getGlobalBounds().contains(policeBoatShootingSprite[i].getPosition()+(Vector2f(0.0f, 20.0f)))) {
 		  // Print
@@ -878,7 +1277,7 @@ enloop1:
   }
 
   // For all army bullets
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < sysArmy; i++) {
 	  // If police bullets hit player boat then
 	  if (playerSpriteRectangle.getGlobalBounds().contains(armyBoatShootingSprite[i].getPosition() + (Vector2f(0.0f, 20.0f)))) {
 		  // Print
@@ -890,12 +1289,15 @@ enloop1:
 	  }
   }
 
+  std::stringstream stream;
+  stream << "SCORE: " << userScore;
+
   // Update various labels
-  scoreText.setString("SCORE: " + std::to_string(userScore));
+  scoreText.setString(stream.str());
   healthText.setString("HEALTH: " + std::to_string(userHealth));
   bulletsAvailableCounter.setString("BULLETS: " + std::to_string(userBullets) + "/30");
   enemyBoatsLeft.setString("REMAIN: " + std::to_string(userRemaingBoats));
-
+  
   // If statement limiting the player to go to far left
   if (playerSprite.getPosition().x < 25.0f) {
 	  std::cout << "To far left";
@@ -913,6 +1315,35 @@ enloop1:
   else {
 	  rightNotAllowed = false;
   }
+
+  if (userHealth <= 1) {
+	  userHasNoHealth = true;
+  }
+
+  if (userRemaingBoats == 0){
+	  levelComplete = true;
+  }
+}
+
+// Render method for the complete screen
+void RenderComplete(RenderWindow &window) {
+	window.draw(backgroundMenuSprite);
+	window.draw(completeMessage);
+	window.draw(completeNext);
+	window.draw(completeExit);
+}
+
+// Render method for the highscores screen
+void RenderHighscores(RenderWindow &window) {
+	window.draw(backgroundMenuSprite);
+	window.draw(highscoresSprite);
+	window.draw(namescoreSprite);
+	window.draw(returnSprite);
+
+	for (int i = 0; i < 5; i++) {
+		window.draw(displayNames[i]);
+		window.draw(displayScores[i]);
+	}
 }
 
 // Render method for the menu screen
@@ -923,34 +1354,38 @@ void RenderMenu(RenderWindow &window) {
 	window.draw(highscoreButtonMenuSprite);
 	window.draw(weblinkButtonMenuSprite);
 	window.draw(exitButtonMenuSprite);
+}
 
-	// Draw all the text values
-	window.draw(startMenuText);
-	window.draw(highscoreMenuText);
-	window.draw(weblinkMenuText);
-	window.draw(exitMenuText);
+// Render method for game over screen
+void RenderGameOver(RenderWindow &window) {
+	window.draw(backgroundMenuSprite);
+	window.draw(gameOverSprite);
+	window.draw(enterNameSprite);
+	window.draw(confirmSprite);
+	window.draw(nameInputOutput);
 }
 
 // Render method for the start screen
 void RenderStart(RenderWindow &window) { 
 	window.draw(backgroundSprite);
 	window.draw(playerSprite);
-	for (int i = 0; i < 30; i++) {
-		window.draw(playerShootingSprite[i]);
+	for (int i = 0; i < sysPolice; i++) {
 		window.draw(policeBoatSprite[i]);
 		window.draw(policeBoatShootingSprite[i]);
+	}
+	for (int i = 0; i < sysArmy; i++) {
 		window.draw(armyBoatSprite[i]);
 		window.draw(armyBoatShootingSprite[i]);
 	}
+	for (int i = 0; i < 30; i++) {
+		window.draw(playerShootingSprite[i]);
+	}
 	window.draw(powerupChestSprite);
-	window.draw(scoreText);
 	window.draw(enemyBoatsLeft);
+	window.draw(scoreText);
 	window.draw(healthText);
 	window.draw(bulletsAvailableCounter);
 	window.draw(gameCountDownTimer);
-	if (userHealth <= 0) {
-		window.draw(gameOverText);
-	}
 }
 
 // Main method which runs everything
@@ -960,9 +1395,6 @@ int main() {
   // Set the window and its size
   RenderWindow window(VideoMode(400, 400), "Pirates of the Firth of Forth!");
  
-  int winX = window.getSize().x;
-  int winY = window.getSize().y;
-
   while (window.isOpen()) {
     Event event;
     while (window.pollEvent(event)) {
@@ -975,8 +1407,13 @@ int main() {
       window.close();
     }
 
+	int winX = window.getSize().x;
+	int winY = window.getSize().y;
+
 	switch (gameState) {
+		// Main Menu
 		case GameStates::STATE_MENU:
+			// If load has not been called then
 			if (!hasLoadMenuBeenCalled) {
 				// Call the load method
 				try {
@@ -989,40 +1426,55 @@ int main() {
 				hasLoadMenuBeenCalled = true;
 			}
 
+			// Bind all the sprites to textures
 			backgroundMenuSprite.setTexture(backgroundMenuTexture);
-			startButtonMenuSprite.setTexture(buttonMenuTexture);
-			highscoreButtonMenuSprite.setTexture(buttonMenuTexture);
-			weblinkButtonMenuSprite.setTexture(buttonMenuTexture);
-			exitButtonMenuSprite.setTexture(buttonMenuTexture);
+			startButtonMenuSprite.setTexture(startButtonMenuTexture);
+			highscoreButtonMenuSprite.setTexture(highscoreButtonMenuTexture);
+			weblinkButtonMenuSprite.setTexture(weblinkButtonMenuTexture);
+			exitButtonMenuSprite.setTexture(exitButtonMenuTexture);
+
+			// Pos x = 100, y = 100
+			startButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) - (winY / 4));
+			startButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			// Pos x = 100, y = 150
+			highscoreButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) - (winY / 8));
+			highscoreButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			// Pos x = 100, y = 200
+			weblinkButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2));
+			weblinkButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			// Pos x = 100, y = 250
+			exitButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) + (winY / 8));
+			exitButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
 
 			// Code for start button pressed
-			if(Mouse::isButtonPressed(Mouse::Left) && 
-				Mouse::getPosition(window).x > winX/2 && Mouse::getPosition(window).x < 350.0f && 
-				(Mouse::getPosition(window).y > 100.0f && Mouse::getPosition(window).y < 150.0f)){
+			if(Mouse::isButtonPressed(Mouse::Left) && startButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window))))
+			{
 				std::cout << "Start button pressed" << std::endl;
+				hasCountDownBeenCalled = false;
+				hasLoadStartBeenCalled = false;
+				sysLevel = 1;
 				gameState = GameStates::STATE_START;
 			}
 
 			// Code for highscores button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) &&
-				Mouse::getPosition(window).x > winX / 2 && Mouse::getPosition(window).x < 350.0f &&
-				(Mouse::getPosition(window).y > 150.0f && Mouse::getPosition(window).y < 200.0f)) {
+			if (Mouse::isButtonPressed(Mouse::Left) && highscoreButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				std::cout << "Highscores button pressed" << std::endl;
+				//hasHighscoresBeenCalled = false;
+				gameState = GameStates::STATE_HIGHSCORES;
 			}
 
 			// Code for weblink button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) &&
-				Mouse::getPosition(window).x > winX / 2 && Mouse::getPosition(window).x < 350.0f &&
-				(Mouse::getPosition(window).y > 200.0f && Mouse::getPosition(window).y < 250.0f)) {
+			if (Mouse::isButtonPressed(Mouse::Left) && weblinkButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				std::cout << "Weblink button pressed" << std::endl;
 				ShellExecute(NULL, "open", "http://www.calumtempleton.com",
 					NULL, NULL, SW_SHOWNORMAL);
 			}
 
 			// Code for exit button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) &&
-				Mouse::getPosition(window).x > winX / 2 && Mouse::getPosition(window).x < 350.0f &&
-				(Mouse::getPosition(window).y > 250.0f && Mouse::getPosition(window).y < 300.0f)) {
+			if (Mouse::isButtonPressed(Mouse::Left) && exitButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				std::cout << "Exit button pressed" << std::endl;
 				window.close();
 			}
@@ -1031,19 +1483,55 @@ int main() {
 			UpdateMenu();
 			RenderMenu(window);
 			window.display();
+
 			break;
 		case GameStates::STATE_OPTIONS:
 			break;
+		// Case for starting the game
 		case GameStates::STATE_START:
+			// If the load method for the start screen hasnt been called
 			if (!hasLoadStartBeenCalled) {
-				// Call the load method
 				try {
+					// If user is on level one set values.... else different values
+					if (sysLevel == 1) {
+						sysPolice = 2;
+						sysSpeed = 20.0f;
+						sysArmy = 2;
+						userRemaingBoats = sysPolice+sysArmy;
+					}
+					else if (sysLevel == 2) {
+						sysPolice = 2;
+						sysSpeed = 25.0f;
+						sysArmy = 4;
+						userRemaingBoats = sysPolice + sysArmy;
+					}
+					else if (sysLevel == 3) {
+						sysPolice = 2;
+						sysSpeed = 30.0f;
+						sysArmy = 8;
+						userRemaingBoats = sysPolice + sysArmy;
+					}
+					else if (sysLevel == 4) {
+						sysPolice = 20;
+						sysSpeed = 35.0f;
+						sysArmy = 12;
+						userRemaingBoats = sysPolice + sysArmy;
+					}
+					else if (sysLevel == 5) {
+						sysPolice = 25;
+						sysSpeed = 40.0f;
+						sysArmy = 18;
+						userRemaingBoats = sysPolice + sysArmy;
+					}
+					// Load the start method
 					LoadStart();
 				}
+				// Catch with error
 				catch (const std::exception &) {
 					std::cerr << "Load error" << std::endl;
 					return 1;
 				}
+				// Set load boolean to true
 				hasLoadStartBeenCalled = true;
 			}
 
@@ -1051,34 +1539,190 @@ int main() {
 			backgroundSprite.setTexture(backgroundTexture);
 			playerSprite.setTexture(playerSpriteTexture);
 			powerupChestSprite.setTexture(powerupChestTexture);
+	
+			// For the various objects - boats and bullets set the textures
 			for (int i = 0; i < 30; i++) {
 				playerShootingSprite[i].setTexture(playerShootingTexture);
 				policeBoatSprite[i].setTexture(policeSpriteTexture);
 				armyBoatSprite[i].setTexture(armySpriteTexture);
-				policeBoatShootingSprite[i].setTexture(playerShootingTexture);
+				policeBoatShootingSprite[i].setTexture(policeShootingTexure);
+				armyBoatShootingSprite[i].setTexture(armyShootingTexture);
 			}
 
+			// If the game countdown has not been called
 			if (!hasCountDownBeenCalled) {
-				// Pause Game
+				// Rednder the game but dont call update
 				window.clear();
 				RenderStart(window);
 				window.display();
-				// Count down timer
-				Sleep(2000);
+				// Get the game to sleep to simulate a countdown
+				Sleep(1000);
+				// Set the bool to true;
 				hasCountDownBeenCalled = true;
 			}
-			else {
-				// Start game
+			// If countdown has been called
+			else 
+			{
+				// Set the game message to go
 				gameCountDownTimer.setString("GO!");
-				window.clear();
-				UpdateStart();
-				RenderStart(window);
-				window.display();
+				// If the user has more than 0 health
+				if (!userHasNoHealth) {
+					// Start the game and get it going
+					window.clear();
+					UpdateStart();
+					RenderStart(window);
+					window.display();
+				}
+				// Else change game states to game over
+				else 
+				{
+					gameState = GameStates::STATE_GAMEOVER;
+				}
+			}
+
+			// If levelcomplete bool is true
+			if (levelComplete) {
+				// Print
+				std::cout << "Police Boat one ending y " << policeBoatSprite[1].getPosition().y << std::endl;
+				// Change game states to level complete
+				gameState = GameStates::STATE_COMPLETE;
 			}
 			break;
-		case GameStates::STATE_LEVEL:
-			break;
+		// Case for highscore screen 
 		case GameStates::STATE_HIGHSCORES:
+			// If highscores hasnt been called or there has been a change
+			if (!hasHighscoresBeenCalled || highscoreChanged == true) {
+				try {
+					// Load highscores
+					LoadHighscores(winX, winY);
+					// Set change to false as change has been loaded
+					highscoreChanged = false;
+				}
+				catch (const std::exception &) {
+					std::cerr << "Load error" << std::endl;
+					return 1;
+				}
+				// Set bool to true
+				hasHighscoresBeenCalled = true;
+			}
+
+			// Show content
+			window.clear();
+			UpdateHighscores();
+			RenderHighscores(window);
+			window.display();
+
+			// Bind textures to sprites
+			highscoresSprite.setTexture(highscoresTexture);
+			namescoreSprite.setTexture(namescoreTexture);
+			returnSprite.setTexture(returnTexture);
+
+			// Set position of return rectangle
+			returnRectangle.setPosition((winX / 4), (winY / 8) + (winY / 4) + (winY / 2));
+			returnRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			// If return rectangle is clicked on 
+			if (Mouse::isButtonPressed(Mouse::Left) && returnRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				// Return user to main menu
+				gameState = GameStates::STATE_MENU;
+			}
+			break;
+		// Case for game over
+		case GameStates::STATE_GAMEOVER:
+			// If game over hasnt been called
+			if (!hasGameOverBeenCalled) {
+				try {
+					// Call game over
+					LoadGameOver(winX, winY);
+				}
+				catch (const std::exception &) {
+					std::cerr << "Load error" << std::endl;
+					return 1;
+				}
+				// Set bool to true
+				hasGameOverBeenCalled = true;
+			}
+
+			// Display content
+			window.clear();
+			UpdateGameOver();
+			RenderGameOver(window);
+			window.display();
+
+			// Set textures to sprites
+			backgroundMenuSprite.setTexture(backgroundMenuTexture);
+			gameOverSprite.setTexture(gameOverTexture);
+			confirmSprite.setTexture(confirmTexture);
+			enterNameSprite.setTexture(enterNameTexture);
+
+			// Set position of confirmRectangle
+			confirmRectangle.setPosition((winX / 4), (winY / 2) + (winY / 4));
+			confirmRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+			
+			// If confirm rectangle is pressed
+			if (Mouse::isButtonPressed(Mouse::Left) && confirmRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				//userHasNoHealth = false;
+				//userHealth = 100;
+				// For 20
+				for (int i = 0; i < 20; i++) {
+					// Get next avaiable place in array
+					if (scores[i] == 0) {
+						// Add user name and user score
+						scores[i] = userScore;
+						names[i] = nameInput;
+						// Set bool to true
+						highscoreChanged = true;
+						break;
+					}
+				}
+				// Go back to main menu
+				gameState = GameStates::STATE_MENU;
+			}
+			
+			break;
+		case GameStates::STATE_COMPLETE:
+			if (!hasCompleteBeenCalled) {
+				// Call the load method
+				try {
+					LoadComplete(winX, winY);
+				}
+				catch (const std::exception &) {
+					std::cerr << "Load error" << std::endl;
+					return 1;
+				}
+				hasCompleteBeenCalled = true;
+			}
+
+			completeMessage.setTexture(completeMessageTexture);
+			completeNext.setTexture(completeNextTexture);
+			completeExit.setTexture(completeExitTexture);
+
+			completeNextRectangle.setPosition((winX / 4), (winY / 2));
+			completeNextRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			completeExitRectangle.setPosition((winX / 4), (winY / 8) + (winY / 2));
+			completeExitRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			if (Mouse::isButtonPressed(Mouse::Left) && completeNextRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				hasCountDownBeenCalled = false;
+				hasLoadStartBeenCalled = false;
+				levelComplete = false;
+				sysLevel += 1;
+				std::cout << "Level" << sysLevel << std::endl;
+				gameState = GameStates::STATE_START;
+			}
+
+			if (Mouse::isButtonPressed(Mouse::Left) && completeExitRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				userHasNoHealth = false;
+				userHealth = 100;
+				Sleep(200);
+				gameState = GameStates::STATE_MENU;
+			}
+
+			window.clear();
+			UpdateComplete();
+			RenderComplete(window);
+			window.display();
 			break;
 	}
   }
