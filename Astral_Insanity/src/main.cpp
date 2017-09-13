@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <windows.h>
 #include <sstream> 
+#include <SFML/Audio.hpp>
 
 // Adds sf in front of everything to reference the library
 using namespace sf;
@@ -25,7 +26,7 @@ int sysPolice = 0, sysArmy = 0, sysLevel = 0;
 float sysSpeed = 50.0f;
 
 // Booleans to limit movement
-bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false;
+bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false, newLevel = false, newGame = false;
 
 // Have the load methods been called
 bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasGameOverBeenCalled = false, hasHighscoresBeenCalled = false, hasCompleteBeenCalled = false;
@@ -402,22 +403,22 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 // Method which displays various user values on the interface
 void setupStartTexts() {
 	scoreText.setFont(font);
-	scoreText.setString("SCORE:");
+	scoreText.setString("SCORE: " + std::to_string(userScore));
 	scoreText.setCharacterSize(24);
 	scoreText.setFillColor(Color::Black);
 	scoreText.setStyle(Text::Bold | Text::Underlined);
 	scoreText.setPosition(200.0f, 0.0f);
 
 	healthText.setFont(font);
-	healthText.setString("HEALTH: 100");
+	healthText.setString("HEALTH: " + std::to_string(userHealth));
 	healthText.setCharacterSize(24);
 	healthText.setFillColor(Color::Black);
 	healthText.setStyle(Text::Bold | Text::Underlined);
 	healthText.setPosition(10.0f, 0.0f);
 
 	gameCountDownTimer.setFont(font);
-	gameCountDownTimer.setString("READY!");
-	gameCountDownTimer.setCharacterSize(40);
+	gameCountDownTimer.setString("Level " + std::to_string(sysLevel));
+	gameCountDownTimer.setCharacterSize(30);
 	gameCountDownTimer.setFillColor(Color::Black);
 	gameCountDownTimer.setStyle(Text::Bold | Text::Underlined);
 	gameCountDownTimer.setPosition(150.0f, 150.0f);
@@ -434,7 +435,7 @@ void setupStartTexts() {
 	enemyBoatsLeft.setCharacterSize(24);
 	enemyBoatsLeft.setFillColor(Color::Black);
 	enemyBoatsLeft.setStyle(Text::Bold | Text::Underlined);
-	enemyBoatsLeft.setPosition(200.0f, 360.0f);
+	enemyBoatsLeft.setPosition(220.0f, 360.0f);
 }
 
 void LoadComplete(int winX, int winY) {
@@ -523,7 +524,7 @@ void LoadHighscores(int winX, int winY) {
 		displayScores[i].setFillColor(Color::Black);
 		displayScores[i].setPosition((winX / 2) + (winX / 16), (winY / 4) + (winY / 16) + (i * 35));
 
-		std::cout << " " << scores[i] << std::endl;
+		//std::cout << " " << scores[i] << std::endl;
 	}
 
 	highscoresSprite.setPosition((winX/4), (winY/16));
@@ -654,9 +655,9 @@ void LoadStart() {
 		int x = rand() % 5;
 		int y = rand() % sysPolice * 2;
 		policeBoatSprite[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
-		std::cout << "Police Boat one deployed at: " << policeBoatSprite[1].getPosition().y << std::endl;
 		policeBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
 		policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+		policeBoatHealth[i] = 0;
 	}
 
 	// Setup army boats
@@ -667,6 +668,7 @@ void LoadStart() {
 		//std::cout << "Army Boat deployed at: " << startingDistancesX[x] << " -" << startingDistancesY[y] << std::endl;
 		armyBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
 		armyBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+		armyBoatHealth[i] = 0;
 	}
 
 	// Set the position to off the players bullets of screen
@@ -676,12 +678,12 @@ void LoadStart() {
 	}
 
 	for (int i = 0; i < sysPolice; i++) {
-		policeBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
+		policeBoatShootingSprite[i].setPosition(-1300.0f, -10.0f);
 		isPoliceBulletActive[i] = false;
 	}
 
 	for (int i = 0; i < sysArmy; i++) {
-		armyBoatShootingSprite[i].setPosition(-10.0f, -10.0f);
+		armyBoatShootingSprite[i].setPosition(-1300.0f, -10.0f);
 		isArmyBulletActive[i] = false;
 	}
 
@@ -689,11 +691,20 @@ void LoadStart() {
 	int y = rand() % sysArmy * 2;
 
 	powerupChestSprite.setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
-	powerupChestRectangle.setPosition(160.0f, 5.0f);
+	powerupChestRectangle.setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
 	powerupChestRectangle.setSize(Vector2f(50.0f, 50.0f));
 
-	userHealth = 100;
+	// Variables that reset each round
+	if (newGame) {
+		userHealth = 100;
+		newGame = false;
+	}
 	userBullets = 30;
+	for (int i = 0; i < 30; i++) {
+		// Reset all player bullets
+		playerShootingSpriteAvailable[i] = true;
+		playerShootingSpriteActive[i] = false;
+	}
 
 	// Setup game texts
 	setupStartTexts();
@@ -965,8 +976,16 @@ void UpdateHighscores() {
 
 // Update method which stores a clock and handles the movement of the default user sprite - called while window is open
 void UpdateStart() {
+  // Create clocks
   static sf::Clock clock;
   static sf::Clock gameClock;
+
+  // If a new level has begun then reset clocks as they are on a seprate thread
+  if (newLevel) {
+	  clock.restart().Zero;
+	  gameClock.restart().Zero;
+	  newLevel = false;
+  }
   float dt = clock.restart().asSeconds();
   float gameTime = gameClock.getElapsedTime().asSeconds();
 
@@ -1038,7 +1057,7 @@ void UpdateStart() {
 	for (int i = 0; i < sysPolice; i++) {
 		if (policeBoatSprite[i].getPosition().x > 29.0f) {
 			policeBoatSprite[i].move(Vector2f(0.0f, sysSpeed*dt));
-			std::cout << policeBoatSprite[1].getPosition().y << std::endl;
+			//std::cout << policeBoatSprite[1].getPosition().y << std::endl;
 			policeBoatRectangle[i].move(Vector2f(0.0f, sysSpeed*dt));
 		}
 	}  
@@ -1068,8 +1087,8 @@ void UpdateStart() {
 				userBullets += 1;
 				// Deactivate bullet
 				playerShootingSpriteActive[i] = false;
-				// Print 
-				std::cout << policeBoatHealth[j] << " I am under attack" << std::endl;
+				// Award user some score
+				userScore += 1;
 				// If boat has been hit by 4 bullets
 				if (policeBoatHealth[j] < -18) {
 					// Reset position
@@ -1079,7 +1098,7 @@ void UpdateStart() {
 					// Lower counter
 					userRemaingBoats -= 1;
 					// Print
-					std::cout << "Police boat destroyed 77777"<< j << std::endl;
+					std::cout << "Police boat destroyed!"<< j << std::endl;
 					// Award user score
 					userScore += 10;
 					// Break for loop - goto allows double break and skips to label
@@ -1106,8 +1125,8 @@ enloop:
 				userBullets += 1;
 				// Deactivate bullet
 				playerShootingSpriteActive[i] = false;
-				// Print 
-				std::cout << armyBoatHealth[j] << " I am under attack 5555" << std::endl;
+				// Award user some score
+				userScore += 1;
 				// If boat has been hit by 6 bullets
 				if (armyBoatHealth[j] < -28) {
 					// Reset position
@@ -1115,7 +1134,7 @@ enloop:
 					// Reset rectangle
 					armyBoatRectangle[j].setPosition(-400.0f, -200.0f);
 					// Print
-					std::cout << "Army boat destroyed 66666 " << j << std::endl;
+					std::cout << "Army boat destroyed!" << std::endl;
 					// Lower counter
 					userRemaingBoats -= 1;
 					// Award user score
@@ -1132,7 +1151,7 @@ enloop1:
 	// Code for collision between bullet and powerup sprite
 	for (int i = 0; i < 30; i++) {
 		if (powerupChestRectangle.getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
-			std::cout << "Powerup obtained." << std::endl;
+			std::cout << "Powerup obtained!" << std::endl;
 			powerupChestSprite.setPosition(-90.0f, -90.0f);
 			powerupChestRectangle.setPosition(-90.0f, -90.0f);
 			userHealth += 25;
@@ -1152,13 +1171,13 @@ enloop1:
 	  if (policeBoatSprite[i].getPosition().y > 400.0f && policeBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
-		  std::cout << "The convoy has been hit!!! -10 Health! 2222" << std::endl;
+		  std::cout << "The convoy has been hit!!! -10 Health!" << std::endl;
 		  // Lower users health
 		  userHealth -= 10;
 		  // Reset boat position
-		  policeBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  policeBoatSprite[i].setPosition(-70.0f, -10.0f);
 		  // Reset rectangle
-		  policeBoatRectangle[i].setPosition(-50.0f, -10.0f);
+		  policeBoatRectangle[i].setPosition(-70.0f, -10.0f);
 		  // Lower counter
 		  userRemaingBoats -= 1;
 	  }
@@ -1169,13 +1188,13 @@ enloop1:
 	  if (armyBoatSprite[i].getPosition().y > 400.0f && armyBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
-		  std::cout << "The convoy has been hit!!! -20 Health! 1111" << std::endl;
+		  std::cout << "The convoy has been hit!!! -20 Health!" << std::endl;
 		  // Lower users health
 		  userHealth -= 20;
 		  // Reset boat position
-		  armyBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  armyBoatSprite[i].setPosition(-70.0f, -10.0f);
 		  // Reset rectangle
-		  armyBoatRectangle[i].setPosition(-50.0f, -10.0f);
+		  armyBoatRectangle[i].setPosition(-70.0f, -10.0f);
 		  // Lower counter
 		  userRemaingBoats -= 1;
 	  }
@@ -1418,6 +1437,7 @@ int main() {
 				// Call the load method
 				try {
 					LoadMenu(winX, winY);
+					
 				}
 				catch (const std::exception &) {
 					std::cerr << "Load error" << std::endl;
@@ -1456,6 +1476,7 @@ int main() {
 				hasCountDownBeenCalled = false;
 				hasLoadStartBeenCalled = false;
 				sysLevel = 1;
+				newGame = true;
 				gameState = GameStates::STATE_START;
 			}
 
@@ -1494,19 +1515,19 @@ int main() {
 				try {
 					// If user is on level one set values.... else different values
 					if (sysLevel == 1) {
-						sysPolice = 2;
+						sysPolice = 5;
 						sysSpeed = 20.0f;
 						sysArmy = 2;
 						userRemaingBoats = sysPolice+sysArmy;
 					}
 					else if (sysLevel == 2) {
-						sysPolice = 2;
+						sysPolice = 10;
 						sysSpeed = 25.0f;
 						sysArmy = 4;
 						userRemaingBoats = sysPolice + sysArmy;
 					}
 					else if (sysLevel == 3) {
-						sysPolice = 2;
+						sysPolice = 15;
 						sysSpeed = 30.0f;
 						sysArmy = 8;
 						userRemaingBoats = sysPolice + sysArmy;
@@ -1564,7 +1585,7 @@ int main() {
 			else 
 			{
 				// Set the game message to go
-				gameCountDownTimer.setString("GO!");
+				gameCountDownTimer.setString("   GO!");
 				// If the user has more than 0 health
 				if (!userHasNoHealth) {
 					// Start the game and get it going
@@ -1582,8 +1603,6 @@ int main() {
 
 			// If levelcomplete bool is true
 			if (levelComplete) {
-				// Print
-				std::cout << "Police Boat one ending y " << policeBoatSprite[1].getPosition().y << std::endl;
 				// Change game states to level complete
 				gameState = GameStates::STATE_COMPLETE;
 			}
@@ -1681,6 +1700,7 @@ int main() {
 			
 			break;
 		case GameStates::STATE_COMPLETE:
+			newLevel = true;
 			if (!hasCompleteBeenCalled) {
 				// Call the load method
 				try {
@@ -1708,7 +1728,6 @@ int main() {
 				hasLoadStartBeenCalled = false;
 				levelComplete = false;
 				sysLevel += 1;
-				std::cout << "Level" << sysLevel << std::endl;
 				gameState = GameStates::STATE_START;
 			}
 
