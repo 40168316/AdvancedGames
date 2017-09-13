@@ -4,6 +4,8 @@
 #include <windows.h>
 #include <sstream> 
 #include <SFML/Audio.hpp>
+#include <SFML/Audio/Export.hpp>
+#include <SFML/Audio/SoundSource.hpp>
 
 // Adds sf in front of everything to reference the library
 using namespace sf;
@@ -566,6 +568,17 @@ void LoadMenu(int winX, int winY) {
 	weblinkButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2));
 
 	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 8));
+
+	sf::SoundBuffer buffer;
+	if (!buffer.loadFromFile("res/music/woo.wav")) {
+		std::cout << "Error 404" << std::endl;
+	}
+	else { std::cout << "Loadedppp" << std::endl; }
+	sf::Sound sound;
+	sound.setBuffer(buffer);
+	sound.setVolume(50);
+	sound.play();
+	Sleep(5000);
 }
 
 void LoadGameOver(int winX, int winY) {
@@ -1437,7 +1450,6 @@ int main() {
 				// Call the load method
 				try {
 					LoadMenu(winX, winY);
-					
 				}
 				catch (const std::exception &) {
 					std::cerr << "Load error" << std::endl;
