@@ -10,6 +10,9 @@
 // Adds sf in front of everything to reference the library
 using namespace sf;
 
+sf::SoundBuffer buffer;
+sf::Sound sound;
+
 Texture playerSpriteTexture, backgroundTexture, policeSpriteTexture, playerShootingTexture, powerupChestTexture, backgroundMenuTexture, buttonMenuTexture, armySpriteTexture, armyShootingTexture, policeShootingTexure;
 Sprite backgroundSprite;
 Font font;
@@ -17,9 +20,9 @@ Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, webl
 
 String nameInput;
 // Used for Main Menu
-Texture startButtonMenuTexture, highscoreButtonMenuTexture, weblinkButtonMenuTexture, exitButtonMenuTexture;
-Sprite backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite;
-RectangleShape  startButtonMenuRect, highscoreButtonMenuRect, weblinkButtonMenuRect, exitButtonMenuRect;
+Texture startButtonMenuTexture, highscoreButtonMenuTexture, weblinkButtonMenuTexture, exitButtonMenuTexture, optionsButtonMenuTexture;
+Sprite backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, optionsButtonMenuSprite;
+RectangleShape startButtonMenuRect, highscoreButtonMenuRect, weblinkButtonMenuRect, exitButtonMenuRect, optionsButtonMenuRect;
 
 bool key[29];
 
@@ -28,10 +31,10 @@ int sysPolice = 0, sysArmy = 0, sysLevel = 0;
 float sysSpeed = 50.0f;
 
 // Booleans to limit movement
-bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false, newLevel = false, newGame = false;
+bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false, newLevel = false, newGame = false, hasLoadPauseBeenCalled = false;
 
 // Have the load methods been called
-bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasGameOverBeenCalled = false, hasHighscoresBeenCalled = false, hasCompleteBeenCalled = false;
+bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasGameOverBeenCalled = false, hasHighscoresBeenCalled = false, hasCompleteBeenCalled = false, hasOpitionsBeenCalled = false;
 bool hasCountDownBeenCalled = false, userHasNoHealth = false;
 
 // Used to hold user information
@@ -80,13 +83,23 @@ Texture completeMessageTexture, completeNextTexture, completeExitTexture;
 Sprite completeMessage, completeNext, completeExit;
 RectangleShape completeNextRectangle, completeExitRectangle;
 
+// Used for the pause screen
+Texture pauseResumeTexture, pauseExitTexture;
+Sprite pauseResumeSprite, pauseExitSprite;
+RectangleShape pauseResumeRectangle, pauseExitRectangle;
+
+// Used for the options screen
+Texture fourOptionTexture, eightOptionTexture, fullOptionTexture, returnOptionTexture;
+Sprite fourOptionSprite, eightOptionSprite, fullOptionSprite, returnOptionSprite;
+RectangleShape fourOptionRectangle, eightOptionRectangle, fullOptionRectangle, returnOptionRectangle;
+
 // Method which gholds the different gamestates
 enum class GameStates
 {
 	STATE_START = 1,
 	STATE_MENU = 2,
-	STATE_OPTIONS = 3,
-	STATE_LEVEL = 4,
+	STATE_PAUSE = 3,
+	STATE_OPITIONS = 4,
 	STATE_HIGHSCORES = 5,
 	STATE_GAMEOVER = 6,
 	STATE_COMPLETE = 7,
@@ -459,6 +472,48 @@ void LoadComplete(int winX, int winY) {
 	completeExit.setPosition((winX / 4), (winY / 8) + (winY / 2));
 }
 
+void LoadPause(int winX, int winY) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!pauseResumeTexture.loadFromFile("res/img/resume.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!pauseExitTexture.loadFromFile("res/img/EXIT.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+
+	pauseResumeSprite.setPosition((winX / 4), (winY / 4) + (winY / 8));
+
+	pauseExitSprite.setPosition((winX / 4), (winY / 2));
+}
+
+void LoadOpitions(int winX, int winY) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!fourOptionTexture.loadFromFile("res/img/four.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!eightOptionTexture.loadFromFile("res/img/eight.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!fullOptionTexture.loadFromFile("res/img/full.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!returnOptionTexture.loadFromFile("res/img/return.png")) {
+		throw std::invalid_argument("Loading error with background!");
+	}
+
+	fourOptionSprite.setPosition((winX / 4), (winY / 4));
+
+	eightOptionSprite.setPosition((winX / 4), (winY / 2) - (winY / 8));
+
+	fullOptionSprite.setPosition((winX / 4), (winY / 2));
+
+	returnOptionSprite.setPosition((winX / 4), (winY / 2) + (winY / 8));
+}
+
 void LoadHighscores(int winX, int winY) {
 	std::cout << "LoadHS" << std::endl;
 	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
@@ -560,6 +615,10 @@ void LoadMenu(int winX, int winY) {
 		throw std::invalid_argument("Loading error with  button tex!");
 	}
 
+	if (!optionsButtonMenuTexture.loadFromFile("res/img/options.png")) {
+		throw std::invalid_argument("Loading error with  button tex!");
+	}
+
 	// Set position and the scale of all the sprite buttons
 	startButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) - (winY / 4));
 	
@@ -567,18 +626,16 @@ void LoadMenu(int winX, int winY) {
 
 	weblinkButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2));
 
-	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 8));
+	optionsButtonMenuSprite.setPosition((winX / 4), (winY / 2) + (winY / 8));
 
-	sf::SoundBuffer buffer;
-	if (!buffer.loadFromFile("res/music/woo.wav")) {
+	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 4));
+
+	if (!buffer.loadFromFile("res/music/boat.wav")) {
 		std::cout << "Error 404" << std::endl;
 	}
 	else { std::cout << "Loadedppp" << std::endl; }
-	sf::Sound sound;
 	sound.setBuffer(buffer);
-	sound.setVolume(50);
 	sound.play();
-	Sleep(5000);
 }
 
 void LoadGameOver(int winX, int winY) {
@@ -711,6 +768,9 @@ void LoadStart() {
 	if (newGame) {
 		userHealth = 100;
 		newGame = false;
+		userScore = 0;
+		userHasNoHealth = false;
+		newLevel = true;
 	}
 	userBullets = 30;
 	for (int i = 0; i < 30; i++) {
@@ -973,6 +1033,16 @@ void UpdateGameOver() {
 }
 
 void UpdateMenu() {
+	static sf::Clock clock;
+	float dt = clock.restart().asSeconds();
+}
+
+void UpdateOpitions() {
+	static sf::Clock clock;
+	float dt = clock.restart().asSeconds();
+}
+
+void UpdatePause() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
 }
@@ -1357,12 +1427,27 @@ enloop1:
   }
 }
 
+void RenderPause(RenderWindow &window) {
+	window.draw(backgroundMenuSprite);
+	window.draw(pauseExitSprite);
+	window.draw(pauseResumeSprite);
+}
+
 // Render method for the complete screen
 void RenderComplete(RenderWindow &window) {
 	window.draw(backgroundMenuSprite);
 	window.draw(completeMessage);
 	window.draw(completeNext);
 	window.draw(completeExit);
+}
+
+// Render method for the complete screen
+void RenderOpitions(RenderWindow &window) {
+	window.draw(backgroundMenuSprite);
+	window.draw(fourOptionSprite);
+	window.draw(eightOptionSprite);
+	window.draw(fullOptionSprite);
+	window.draw(returnOptionSprite);
 }
 
 // Render method for the highscores screen
@@ -1386,6 +1471,7 @@ void RenderMenu(RenderWindow &window) {
 	window.draw(highscoreButtonMenuSprite);
 	window.draw(weblinkButtonMenuSprite);
 	window.draw(exitButtonMenuSprite);
+	window.draw(optionsButtonMenuSprite);
 }
 
 // Render method for game over screen
@@ -1425,8 +1511,12 @@ int main() {
 	// Set the gamestate the the default start
   GameStates gameState = GameStates::STATE_MENU;
   // Set the window and its size
-  RenderWindow window(VideoMode(400, 400), "Pirates of the Firth of Forth!");
+  RenderWindow window(VideoMode(400, 400), "Pirates of the Firth of Forth!", Style::Default);
  
+  int winX = window.getSize().x;
+  int winY = window.getSize().y;
+  int scaleR = 1;
+
   while (window.isOpen()) {
     Event event;
     while (window.pollEvent(event)) {
@@ -1438,9 +1528,6 @@ int main() {
     if (Keyboard::isKeyPressed(Keyboard::Escape)) {
       window.close();
     }
-
-	int winX = window.getSize().x;
-	int winY = window.getSize().y;
 
 	switch (gameState) {
 		// Main Menu
@@ -1464,6 +1551,7 @@ int main() {
 			highscoreButtonMenuSprite.setTexture(highscoreButtonMenuTexture);
 			weblinkButtonMenuSprite.setTexture(weblinkButtonMenuTexture);
 			exitButtonMenuSprite.setTexture(exitButtonMenuTexture);
+			optionsButtonMenuSprite.setTexture(optionsButtonMenuTexture);
 
 			// Pos x = 100, y = 100
 			startButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) - (winY / 4));
@@ -1477,8 +1565,11 @@ int main() {
 			weblinkButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2));
 			weblinkButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
 
+			optionsButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) + (winY / 8));
+			optionsButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
+
 			// Pos x = 100, y = 250
-			exitButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) + (winY / 8));
+			exitButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) + (winY / 4));
 			exitButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
 
 			// Code for start button pressed
@@ -1506,6 +1597,13 @@ int main() {
 					NULL, NULL, SW_SHOWNORMAL);
 			}
 
+			// Code for weblink button pressed
+			if (Mouse::isButtonPressed(Mouse::Left) && optionsButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				std::cout << "Options button pressed" << std::endl;
+				Sleep(300);
+				gameState = GameStates::STATE_OPITIONS;
+			}
+
 			// Code for exit button pressed
 			if (Mouse::isButtonPressed(Mouse::Left) && exitButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				std::cout << "Exit button pressed" << std::endl;
@@ -1518,7 +1616,48 @@ int main() {
 			window.display();
 
 			break;
-		case GameStates::STATE_OPTIONS:
+		case GameStates::STATE_PAUSE:
+			// If load has not been called then
+			if (!hasLoadPauseBeenCalled) {
+				// Call the load method
+				try {
+					LoadPause(winX, winY);
+				}
+				catch (const std::exception &) {
+					std::cerr << "Load error" << std::endl;
+					return 1;
+				}
+				hasLoadPauseBeenCalled = true;
+			}
+
+			pauseResumeSprite.setTexture(pauseResumeTexture);
+			pauseExitSprite.setTexture(pauseExitTexture);
+
+			pauseResumeRectangle.setPosition((winX / 4), (winY / 4) + (winY / 8));
+			pauseResumeRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			pauseExitRectangle.setPosition((winX / 4), (winY / 2));
+			pauseExitRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+
+			// If return rectangle is clicked on 
+			if (Mouse::isButtonPressed(Mouse::Left) && pauseResumeSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				// Return user to main menu
+				newLevel = true;
+				gameState = GameStates::STATE_START;
+			}
+
+			// If return rectangle is clicked on 
+			if (Mouse::isButtonPressed(Mouse::Left) && pauseExitSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				// Return user to main menu
+				gameState = GameStates::STATE_MENU;
+			}
+
+			window.clear();
+			UpdatePause();
+			RenderPause(window);
+			window.display();
+
 			break;
 		// Case for starting the game
 		case GameStates::STATE_START:
@@ -1572,6 +1711,8 @@ int main() {
 			backgroundSprite.setTexture(backgroundTexture);
 			playerSprite.setTexture(playerSpriteTexture);
 			powerupChestSprite.setTexture(powerupChestTexture);
+
+			backgroundSprite.setPosition(winX, winY);
 	
 			// For the various objects - boats and bullets set the textures
 			for (int i = 0; i < 30; i++) {
@@ -1611,6 +1752,12 @@ int main() {
 				{
 					gameState = GameStates::STATE_GAMEOVER;
 				}
+			}
+
+			if ((event.type == Event::KeyReleased) && (event.key.code == Keyboard::Key::P)) {
+				std::cout << "P" << std::endl;
+				Sleep(200);
+				gameState = GameStates::STATE_PAUSE;
 			}
 
 			// If levelcomplete bool is true
@@ -1655,6 +1802,7 @@ int main() {
 			// If return rectangle is clicked on 
 			if (Mouse::isButtonPressed(Mouse::Left) && returnRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				// Return user to main menu
+				nameInput = "";
 				gameState = GameStates::STATE_MENU;
 			}
 			break;
@@ -1755,6 +1903,71 @@ int main() {
 			RenderComplete(window);
 			window.display();
 			break;
+		case GameStates::STATE_OPITIONS:
+			if (!hasOpitionsBeenCalled) {
+				// Call the load method
+				try {
+					LoadOpitions(winX, winY);
+				}
+				catch (const std::exception &) {
+					std::cerr << "Load error" << std::endl;
+					return 1;
+				}
+				hasOpitionsBeenCalled = true;
+			}
+
+			fourOptionSprite.setTexture(fourOptionTexture);
+			eightOptionSprite.setTexture(eightOptionTexture);
+			fullOptionSprite.setTexture(fullOptionTexture);
+			returnOptionSprite.setTexture(returnOptionTexture);
+
+			fourOptionRectangle.setPosition((winX / 4), (winY / 4));
+			fourOptionRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			eightOptionRectangle.setPosition((winX / 4), (winY / 2) - (winY / 8));
+			eightOptionRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			fullOptionRectangle.setPosition((winX / 4), (winY / 2));
+			fullOptionRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			returnOptionRectangle.setPosition((winX / 4), (winY / 2) + (winY / 8));
+			returnOptionRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			if (Mouse::isButtonPressed(Mouse::Left) && fourOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				std::cout << "four" << std::endl;
+				window.create(VideoMode(400, 400), "Pirates of the Firth of Forth!");
+				winX = 400;
+				winY = 400;
+				LoadOpitions(winX, winY);
+			}
+
+			if (Mouse::isButtonPressed(Mouse::Left) && eightOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				std::cout << "eight" << std::endl;
+				window.create(VideoMode(800, 800), "Pirates of the Firth of Forth!");
+				scaleR = 2;
+				backgroundMenuSprite.setScale(scaleR, scaleR);
+				winX = 800;
+				winY = 800;
+				LoadOpitions(winX, winY);
+
+			}
+
+			if (Mouse::isButtonPressed(Mouse::Left) && fullOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				std::cout << "full" << std::endl;
+				backgroundMenuSprite.setScale(4.8f, 2.7f);
+				window.create(VideoMode(1920.0f, 1080.0f), "Pirates of the Firth of Forth!", Style::Fullscreen);	
+			}
+
+			if (Mouse::isButtonPressed(Mouse::Left) && returnOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+				std::cout << "Ret" << std::endl;
+				Sleep(200);
+				gameState = GameStates::STATE_MENU;
+			}
+
+			window.clear();
+			UpdateOpitions();
+			RenderOpitions(window);
+			window.display();
 	}
   }
 
