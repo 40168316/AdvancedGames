@@ -20,9 +20,11 @@ Text scoreText, healthText, gameOverText, startMenuText, highscoreMenuText, webl
 
 String nameInput;
 // Used for Main Menu
-Texture startButtonMenuTexture, highscoreButtonMenuTexture, weblinkButtonMenuTexture, exitButtonMenuTexture, optionsButtonMenuTexture;
-Sprite backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, optionsButtonMenuSprite;
+Texture startButtonMenuTexture, highscoreButtonMenuTexture, weblinkButtonMenuTexture, exitButtonMenuTexture, optionsButtonMenuTexture, mouseMenuTexture;
+Sprite backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, optionsButtonMenuSprite, mouseMenuSprite;
 RectangleShape startButtonMenuRect, highscoreButtonMenuRect, weblinkButtonMenuRect, exitButtonMenuRect, optionsButtonMenuRect;
+
+
 
 bool key[29];
 
@@ -31,7 +33,7 @@ int sysPolice = 0, sysArmy = 0, sysLevel = 0;
 float sysSpeed = 50.0f;
 
 // Booleans to limit movement
-bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false, newLevel = false, newGame = false, hasLoadPauseBeenCalled = false;
+bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false, newLevel = false, newGame = false, hasLoadPauseBeenCalled = false, isControllerButtonPressed = false;
 
 // Have the load methods been called
 bool hasLoadStartBeenCalled = false, hasLoadMenuBeenCalled = false, hasGameOverBeenCalled = false, hasHighscoresBeenCalled = false, hasCompleteBeenCalled = false, hasOpitionsBeenCalled = false;
@@ -593,16 +595,16 @@ void LoadMenu(int winX, int winY) {
 	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
 		throw std::invalid_argument("Loading error with background!");
 	}
-
 	if (!buttonMenuTexture.loadFromFile("res/img/enemy.png")) {
 		throw std::invalid_argument("Loading error with menu start button!");
 	}
-
 	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
 		throw std::invalid_argument("Loading error with font!");
 	}
-
 	if (!startButtonMenuTexture.loadFromFile("res/img/start.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
+	}
+	if (!mouseMenuTexture.loadFromFile("res/img/smallbullet1.png")) {
 		throw std::invalid_argument("Loading error with button tex!");
 	}
 	if (!highscoreButtonMenuTexture.loadFromFile("res/img/high.png")) {
@@ -614,7 +616,6 @@ void LoadMenu(int winX, int winY) {
 	if (!exitButtonMenuTexture.loadFromFile("res/img/EXIT.png")) {
 		throw std::invalid_argument("Loading error with  button tex!");
 	}
-
 	if (!optionsButtonMenuTexture.loadFromFile("res/img/options.png")) {
 		throw std::invalid_argument("Loading error with  button tex!");
 	}
@@ -629,6 +630,8 @@ void LoadMenu(int winX, int winY) {
 	optionsButtonMenuSprite.setPosition((winX / 4), (winY / 2) + (winY / 8));
 
 	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 4));
+
+	mouseMenuSprite.setPosition((winX / 2), (winY / 2));
 
 	if (!buffer.loadFromFile("res/music/boat.wav")) {
 		std::cout << "Error 404" << std::endl;
@@ -1035,6 +1038,25 @@ void UpdateGameOver() {
 void UpdateMenu() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
+
+	Vector2f move;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -2.0f) {
+		move.x--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 4.0f) {
+		move.x++;
+	}
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
+		move.y--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 84.0f) {
+		move.y++;
+	}
+	mouseMenuSprite.move(move*100.0f*dt);
+	std::cout << sf::Joystick::getAxisPosition(0, sf::Joystick::Y) << std::endl;
 }
 
 void UpdateOpitions() {
@@ -1089,12 +1111,12 @@ void UpdateStart() {
 
   // If keys are pressed then move users sprite
   if (!leftNotAllowed) {
-	  if (Keyboard::isKeyPressed(Keyboard::Left)) {
+	  if (Keyboard::isKeyPressed(Keyboard::Left) || sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -2.0f) {
 		  move.x--;
 	  }
   }
   if (!rightNotAllowed) {
-	  if (Keyboard::isKeyPressed(Keyboard::Right)) {
+	  if (Keyboard::isKeyPressed(Keyboard::Right) || sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 4.0f) {
 		  move.x++;
 	  }
   }
@@ -1132,6 +1154,44 @@ void UpdateStart() {
 	if (!Keyboard::isKeyPressed(Keyboard::Space)) {
 		isSpacePressed = false;
 	}
+
+	// If space is not currently pressed
+	if (isControllerButtonPressed == false) {
+		// If space is pressed 
+		if (sf::Joystick::isButtonPressed(0, sf::Joystick::X)) {
+			// Set boolean to true
+			isControllerButtonPressed = true;
+			// For all bullets
+			for (int i = 0; i < 30; i++) {
+				// If bullet is avaiable - default true
+				if (playerShootingSpriteAvailable[i] == true)
+				{
+					// Set bullet to active
+					playerShootingSpriteActive[i] = true;
+					// Set position to boat
+					playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 20.0f, (playerSprite.getPosition().y) - 20.0f);
+					// Set bullet to not available
+					playerShootingSpriteAvailable[i] = false;
+					// Lower the users bullet count
+					userBullets -= 1;
+					// break as bullet has been selected
+					break;
+				}
+			}
+		}
+	}
+
+	// If space bar is realised - set to false
+	if (!sf::Joystick::isButtonPressed(0, sf::Joystick::X)) {
+		isControllerButtonPressed = false;
+	}
+
+	/*
+	if (!sf::Joystick::isButtonPressed(0, sf::Joystick::X)) {
+		isSpacePressed = false;
+		isControllerButtonPressed
+	}
+	*/
 
 	// Method which updates the bullets position
 	moveTheBullets(upMovement, dt);
@@ -1472,6 +1532,7 @@ void RenderMenu(RenderWindow &window) {
 	window.draw(weblinkButtonMenuSprite);
 	window.draw(exitButtonMenuSprite);
 	window.draw(optionsButtonMenuSprite);
+	window.draw(mouseMenuSprite);
 }
 
 // Render method for game over screen
@@ -1485,7 +1546,7 @@ void RenderGameOver(RenderWindow &window) {
 
 // Render method for the start screen
 void RenderStart(RenderWindow &window) { 
-	window.draw(backgroundSprite);
+	window.draw(backgroundMenuSprite);
 	window.draw(playerSprite);
 	for (int i = 0; i < sysPolice; i++) {
 		window.draw(policeBoatSprite[i]);
@@ -1552,6 +1613,7 @@ int main() {
 			weblinkButtonMenuSprite.setTexture(weblinkButtonMenuTexture);
 			exitButtonMenuSprite.setTexture(exitButtonMenuTexture);
 			optionsButtonMenuSprite.setTexture(optionsButtonMenuTexture);
+			mouseMenuSprite.setTexture(mouseMenuTexture);
 
 			// Pos x = 100, y = 100
 			startButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) - (winY / 4));
@@ -1571,6 +1633,15 @@ int main() {
 			// Pos x = 100, y = 250
 			exitButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) + (winY / 4));
 			exitButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
+
+			if (sf::Joystick::isConnected(0))
+			{
+				// joystick number 0 is connected
+				//std::cout << "Controller" << std::endl;
+				float x = sf::Joystick::getAxisPosition(0, sf::Joystick::X);
+				float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Y);
+				//std::cout << x << std::endl;
+			}
 
 			// Code for start button pressed
 			if(Mouse::isButtonPressed(Mouse::Left) && startButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window))))
@@ -1708,7 +1779,7 @@ int main() {
 			}
 
 			// Set the various textures
-			backgroundSprite.setTexture(backgroundTexture);
+			backgroundMenuSprite.setTexture(backgroundTexture);
 			playerSprite.setTexture(playerSpriteTexture);
 			powerupChestSprite.setTexture(powerupChestTexture);
 
