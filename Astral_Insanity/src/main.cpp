@@ -22,9 +22,7 @@ String nameInput;
 // Used for Main Menu
 Texture startButtonMenuTexture, highscoreButtonMenuTexture, weblinkButtonMenuTexture, exitButtonMenuTexture, optionsButtonMenuTexture, mouseMenuTexture;
 Sprite backgroundMenuSprite, startButtonMenuSprite, highscoreButtonMenuSprite, weblinkButtonMenuSprite, exitButtonMenuSprite, optionsButtonMenuSprite, mouseMenuSprite;
-RectangleShape startButtonMenuRect, highscoreButtonMenuRect, weblinkButtonMenuRect, exitButtonMenuRect, optionsButtonMenuRect;
-
-
+RectangleShape startButtonMenuRect, highscoreButtonMenuRect, weblinkButtonMenuRect, exitButtonMenuRect, optionsButtonMenuRect, mouseMenuRectangle;
 
 bool key[29];
 
@@ -632,6 +630,8 @@ void LoadMenu(int winX, int winY) {
 	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 4));
 
 	mouseMenuSprite.setPosition((winX / 2), (winY / 2));
+	mouseMenuRectangle.setPosition((winX / 2), (winY / 2));
+	mouseMenuRectangle.setSize(Vector2f(10.0f, 10.0f));
 
 	if (!buffer.loadFromFile("res/music/boat.wav")) {
 		std::cout << "Error 404" << std::endl;
@@ -1052,11 +1052,11 @@ void UpdateMenu() {
 		move.y--;
 	}
 
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 84.0f) {
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 8.0f) {
 		move.y++;
 	}
 	mouseMenuSprite.move(move*100.0f*dt);
-	std::cout << sf::Joystick::getAxisPosition(0, sf::Joystick::Y) << std::endl;
+	mouseMenuRectangle.move(move*100.0f*dt);
 }
 
 void UpdateOpitions() {
@@ -1634,17 +1634,9 @@ int main() {
 			exitButtonMenuRect.setPosition((winX / 2) - (winX / 4), (winY / 2) + (winY / 4));
 			exitButtonMenuRect.setSize(Vector2f((winX / 2), (winY / 8)));
 
-			if (sf::Joystick::isConnected(0))
-			{
-				// joystick number 0 is connected
-				//std::cout << "Controller" << std::endl;
-				float x = sf::Joystick::getAxisPosition(0, sf::Joystick::X);
-				float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Y);
-				//std::cout << x << std::endl;
-			}
-
 			// Code for start button pressed
-			if(Mouse::isButtonPressed(Mouse::Left) && startButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window))))
+			if((Mouse::isButtonPressed(Mouse::Left) && startButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) || 
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && startButtonMenuRect.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition())))
 			{
 				std::cout << "Start button pressed" << std::endl;
 				hasCountDownBeenCalled = false;
@@ -1655,28 +1647,36 @@ int main() {
 			}
 
 			// Code for highscores button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) && highscoreButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && highscoreButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && highscoreButtonMenuRect.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition())))
+			{
 				std::cout << "Highscores button pressed" << std::endl;
 				//hasHighscoresBeenCalled = false;
 				gameState = GameStates::STATE_HIGHSCORES;
 			}
 
 			// Code for weblink button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) && weblinkButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && weblinkButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && weblinkButtonMenuRect.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition())))
+			{
 				std::cout << "Weblink button pressed" << std::endl;
 				ShellExecute(NULL, "open", "http://www.calumtempleton.com",
 					NULL, NULL, SW_SHOWNORMAL);
 			}
 
 			// Code for weblink button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) && optionsButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && optionsButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && optionsButtonMenuRect.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition())))
+			{
 				std::cout << "Options button pressed" << std::endl;
 				Sleep(300);
 				gameState = GameStates::STATE_OPITIONS;
 			}
 
 			// Code for exit button pressed
-			if (Mouse::isButtonPressed(Mouse::Left) && exitButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && exitButtonMenuRect.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && exitButtonMenuRect.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition())))
+			{
 				std::cout << "Exit button pressed" << std::endl;
 				window.close();
 			}
