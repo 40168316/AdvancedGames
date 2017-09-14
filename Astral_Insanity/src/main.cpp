@@ -416,13 +416,13 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 }
 
 // Method which displays various user values on the interface
-void setupStartTexts() {
+void setupStartTexts(int winX, int winY) {
 	scoreText.setFont(font);
 	scoreText.setString("SCORE: " + std::to_string(userScore));
 	scoreText.setCharacterSize(24);
 	scoreText.setFillColor(Color::Black);
 	scoreText.setStyle(Text::Bold | Text::Underlined);
-	scoreText.setPosition(200.0f, 0.0f);
+	scoreText.setPosition((winX/2), 0.0f);
 
 	healthText.setFont(font);
 	healthText.setString("HEALTH: " + std::to_string(userHealth));
@@ -436,21 +436,21 @@ void setupStartTexts() {
 	gameCountDownTimer.setCharacterSize(30);
 	gameCountDownTimer.setFillColor(Color::Black);
 	gameCountDownTimer.setStyle(Text::Bold | Text::Underlined);
-	gameCountDownTimer.setPosition(150.0f, 150.0f);
+	gameCountDownTimer.setPosition((winX / 2), (winY / 2));
 
 	bulletsAvailableCounter.setFont(font);
 	bulletsAvailableCounter.setString("BULLETS: 30/30");
 	bulletsAvailableCounter.setCharacterSize(24);
 	bulletsAvailableCounter.setFillColor(Color::Black);
 	bulletsAvailableCounter.setStyle(Text::Bold | Text::Underlined);
-	bulletsAvailableCounter.setPosition(10.0f, 360.0f);
+	bulletsAvailableCounter.setPosition(10.0f, (winY / 2) + (winY / 4) + (winY / 8));
 
 	enemyBoatsLeft.setFont(font);
 	enemyBoatsLeft.setString("REMAIN: " + std::to_string(userRemaingBoats));
 	enemyBoatsLeft.setCharacterSize(24);
 	enemyBoatsLeft.setFillColor(Color::Black);
 	enemyBoatsLeft.setStyle(Text::Bold | Text::Underlined);
-	enemyBoatsLeft.setPosition(220.0f, 360.0f);
+	enemyBoatsLeft.setPosition((winX / 2) + 20.0F, (winY / 2) + (winY / 4) + (winY / 8));
 }
 
 void LoadComplete(int winX, int winY) {
@@ -505,17 +505,22 @@ void LoadOpitions(int winX, int winY) {
 		throw std::invalid_argument("Loading error with background!");
 	}
 
+	backgroundMenuSprite.setScale(winX/400, winY/400);
+
 	fourOptionSprite.setPosition((winX / 4), (winY / 4));
+	fourOptionSprite.setScale(winX / 400, winY / 400);
 
 	eightOptionSprite.setPosition((winX / 4), (winY / 2) - (winY / 8));
+	eightOptionSprite.setScale(winX / 400, winY / 400);
 
 	fullOptionSprite.setPosition((winX / 4), (winY / 2));
+	fullOptionSprite.setScale(winX / 400, winY / 400);
 
 	returnOptionSprite.setPosition((winX / 4), (winY / 2) + (winY / 8));
+	returnOptionSprite.setScale(winX / 400, winY / 400);
 }
 
 void LoadHighscores(int winX, int winY) {
-	std::cout << "LoadHS" << std::endl;
 	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
 		throw std::invalid_argument("Loading error with background!");
 	}
@@ -531,19 +536,7 @@ void LoadHighscores(int winX, int winY) {
 	if (!namescoreTexture.loadFromFile("res/img/namescore.png")) {
 		throw std::invalid_argument("Loading error with pic!");
 	}
-	/*
-	names[0] = "Sam";
-	names[1] = "John";
-	names[2] = "Mark";
-	names[3] = "Neil";
-	names[4] = "CalumT";
 
-	scores[0] = 1;
-	scores[1] = 2;
-	scores[2] = 7;
-	scores[3] = 4;
-	scores[4] = 5;
-	*/
 	int temp;
 	String tempName;
 
@@ -571,22 +564,29 @@ void LoadHighscores(int winX, int winY) {
 	for (int i = 0; i < 5; i++) {
 		displayNames[i].setFont(font);
 		displayNames[i].setString(names[i]);
-		displayNames[i].setCharacterSize(30);
+		displayNames[i].setCharacterSize(30 * (winY / 400));
 		displayNames[i].setFillColor(Color::Black);
 		displayNames[i].setPosition((winX / 4), (winY / 4) + (winY / 16) + (i * 35));
 
 		displayScores[i].setFont(font);
 		displayScores[i].setString(std::to_string(scores[i]));
-		displayScores[i].setCharacterSize(30);
+		displayScores[i].setCharacterSize(30 * (winY / 400));
 		displayScores[i].setFillColor(Color::Black);
 		displayScores[i].setPosition((winX / 2) + (winX / 16), (winY / 4) + (winY / 16) + (i * 35));
 
 		//std::cout << " " << scores[i] << std::endl;
 	}
 
+	backgroundMenuSprite.setScale(winX / 400, winY / 400);
+
 	highscoresSprite.setPosition((winX/4), (winY/16));
+	highscoresSprite.setScale(winX / 400, winY / 400);
+
 	namescoreSprite.setPosition((winX/4), (winY/8) + (winY / 16));
+	namescoreSprite.setScale(winX / 400, winY / 400);
+
 	returnSprite.setPosition((winX/4), (winY/8) + (winY/4) + (winY/2));
+	returnSprite.setScale(winX / 400, winY / 400);
 }
 
 void LoadMenu(int winX, int winY) {
@@ -620,14 +620,19 @@ void LoadMenu(int winX, int winY) {
 
 	// Set position and the scale of all the sprite buttons
 	startButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) - (winY / 4));
+	startButtonMenuSprite.setScale(winX / 400, winY / 400);
 	
 	highscoreButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) - (winY / 8));
+	highscoreButtonMenuSprite.setScale(winX / 400, winY / 400);
 
 	weblinkButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2));
+	weblinkButtonMenuSprite.setScale(winX / 400, winY / 400);
 
 	optionsButtonMenuSprite.setPosition((winX / 4), (winY / 2) + (winY / 8));
+	optionsButtonMenuSprite.setScale(winX / 400, winY / 400);
 
 	exitButtonMenuSprite.setPosition((winX/2) - (winX/4), (winY / 2) + (winY / 4));
+	exitButtonMenuSprite.setScale(winX / 400, winY / 400);
 
 	mouseMenuSprite.setPosition((winX / 2), (winY / 2));
 	mouseMenuRectangle.setPosition((winX / 2), (winY / 2));
@@ -638,7 +643,7 @@ void LoadMenu(int winX, int winY) {
 	}
 	else { std::cout << "Loadedppp" << std::endl; }
 	sound.setBuffer(buffer);
-	sound.play();
+	//sound.play();
 }
 
 void LoadGameOver(int winX, int winY) {
@@ -671,12 +676,19 @@ void LoadGameOver(int winX, int winY) {
 	nameInputOutput.setStyle(Text::Bold | Text::Underlined);
 
 	gameOverSprite.setPosition((winX /4), (winY / 8));
+	gameOverSprite.setScale(winX / 400, winY / 400);
+
 	enterNameSprite.setPosition((winX / 4), (winY / 4));
+	enterNameSprite.setScale(winX / 400, winY / 400);
+
 	confirmSprite.setPosition((winX / 4), (winY / 2) + (winY / 4));
+	confirmSprite.setScale(winX / 400, winY / 400);
+
 	nameInputOutput.setPosition((winX / 4) + (winX / 8), (winY / 2));
+	nameInputOutput.setScale(winX / 400, winY / 400);
 }
 
-void LoadStart() {
+void LoadStart(int winX, int winY) {
 	if (!playerSpriteTexture.loadFromFile("res/img/pirate.png")) {
 		throw std::invalid_argument("Loading error with sprite!");
 	}
@@ -711,8 +723,8 @@ void LoadStart() {
 	}
 
 	// Set the start position of the user sprite
-	playerSprite.setPosition(130.0f, 300.0f);
-	playerSpriteRectangle.setPosition(130.0f, 300.0f);
+	playerSprite.setPosition((winX/2), (winY/ 2) + (winY/4));
+	playerSpriteRectangle.setPosition((winX / 2), (winY / 2) + (winY / 4));
 	playerSpriteRectangle.setSize(Vector2f(41.0f, 50.0f));
 
 	float startingDistancesY[100];
@@ -783,7 +795,7 @@ void LoadStart() {
 	}
 
 	// Setup game texts
-	setupStartTexts();
+	setupStartTexts(winX, winY);
 }
 
 void UpdateGameOver() {
@@ -1576,7 +1588,6 @@ int main() {
  
   int winX = window.getSize().x;
   int winY = window.getSize().y;
-  int scaleR = 1;
 
   while (window.isOpen()) {
     Event event;
@@ -1710,7 +1721,6 @@ int main() {
 			pauseExitRectangle.setPosition((winX / 4), (winY / 2));
 			pauseExitRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
 
-
 			// If return rectangle is clicked on 
 			if (Mouse::isButtonPressed(Mouse::Left) && pauseResumeSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				// Return user to main menu
@@ -1767,7 +1777,7 @@ int main() {
 						userRemaingBoats = sysPolice + sysArmy;
 					}
 					// Load the start method
-					LoadStart();
+					LoadStart(winX, winY);
 				}
 				// Catch with error
 				catch (const std::exception &) {
@@ -1782,8 +1792,6 @@ int main() {
 			backgroundMenuSprite.setTexture(backgroundTexture);
 			playerSprite.setTexture(playerSpriteTexture);
 			powerupChestSprite.setTexture(powerupChestTexture);
-
-			backgroundSprite.setPosition(winX, winY);
 	
 			// For the various objects - boats and bullets set the textures
 			for (int i = 0; i < 30; i++) {
@@ -1900,7 +1908,7 @@ int main() {
 			window.display();
 
 			// Set textures to sprites
-			backgroundMenuSprite.setTexture(backgroundMenuTexture);
+			//backgroundMenuSprite.setTexture(backgroundMenuTexture);
 			gameOverSprite.setTexture(gameOverTexture);
 			confirmSprite.setTexture(confirmTexture);
 			enterNameSprite.setTexture(enterNameTexture);
@@ -2010,23 +2018,34 @@ int main() {
 				winX = 400;
 				winY = 400;
 				LoadOpitions(winX, winY);
+				LoadMenu(winX, winY);
+				LoadHighscores(winX, winY);
+				LoadComplete(winX, winY);
+				LoadGameOver(winX, winY);
 			}
 
 			if (Mouse::isButtonPressed(Mouse::Left) && eightOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				std::cout << "eight" << std::endl;
 				window.create(VideoMode(800, 800), "Pirates of the Firth of Forth!");
-				scaleR = 2;
-				backgroundMenuSprite.setScale(scaleR, scaleR);
 				winX = 800;
 				winY = 800;
 				LoadOpitions(winX, winY);
-
+				LoadMenu(winX, winY);
+				LoadHighscores(winX, winY);
+				LoadComplete(winX, winY);
+				LoadGameOver(winX, winY);
 			}
 
 			if (Mouse::isButtonPressed(Mouse::Left) && fullOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
 				std::cout << "full" << std::endl;
-				backgroundMenuSprite.setScale(4.8f, 2.7f);
 				window.create(VideoMode(1920.0f, 1080.0f), "Pirates of the Firth of Forth!", Style::Fullscreen);	
+				winX = 1920;
+				winY = 1080;
+				LoadOpitions(winX, winY);
+				LoadMenu(winX, winY);
+				LoadHighscores(winX, winY);
+				LoadComplete(winX, winY);
+				LoadGameOver(winX, winY);
 			}
 
 			if (Mouse::isButtonPressed(Mouse::Left) && returnOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
