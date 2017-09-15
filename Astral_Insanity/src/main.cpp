@@ -6,6 +6,7 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Audio/Export.hpp>
 #include <SFML/Audio/SoundSource.hpp>
+#include <ctime>
 
 // Adds sf in front of everything to reference the library
 using namespace sf;
@@ -29,6 +30,7 @@ bool key[29];
 // Used for the gameSystem
 int sysPolice = 0, sysArmy = 0, sysLevel = 0;
 float sysSpeed = 50.0f;
+float bulletSpeed = 80.0f;
 
 // Booleans to limit movement
 bool leftNotAllowed = false, rightNotAllowed = false, levelComplete = false, highscoreChanged = false, newLevel = false, newGame = false, hasLoadPauseBeenCalled = false, isControllerButtonPressed = false;
@@ -110,7 +112,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	// If bullet is active then
 	if (playerShootingSpriteActive[0]) {
 		// Move bullet
-		playerShootingSprite[0].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[0].move(upMovement*bulletSpeed*dt);
 		// If bullet is off screen then
 		if (playerShootingSprite[0].getPosition().y < -20.0f) {
 			// Reset bullet posotion
@@ -125,7 +127,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[1]) {
-		playerShootingSprite[1].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[1].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[1].getPosition().y < -20.0f) {
 			playerShootingSprite[1].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[1] = true;
@@ -135,7 +137,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[2]) {
-		playerShootingSprite[2].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[2].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[2].getPosition().y < -20.0f) {
 			playerShootingSprite[2].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[2] = true;
@@ -145,7 +147,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[3]) {
-		playerShootingSprite[3].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[3].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[3].getPosition().y < -20.0f) {
 			playerShootingSprite[3].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[3] = true;
@@ -155,7 +157,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[4]) {
-		playerShootingSprite[4].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[4].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[4].getPosition().y < -20.0f) {
 			playerShootingSprite[4].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[4] = true;
@@ -165,7 +167,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[5]) {
-		playerShootingSprite[5].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[5].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[5].getPosition().y < -20.0f) {
 			playerShootingSprite[5].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[5] = true;
@@ -175,7 +177,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[6]) {
-		playerShootingSprite[6].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[6].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[6].getPosition().y < -20.0f) {
 			playerShootingSprite[6].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[6] = true;
@@ -185,7 +187,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[7]) {
-		playerShootingSprite[7].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[7].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[7].getPosition().y < -20.0f) {
 			playerShootingSprite[7].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[7] = true;
@@ -195,7 +197,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[8]) {
-		playerShootingSprite[8].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[8].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[8].getPosition().y < -20.0f) {
 			playerShootingSprite[8].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[8] = true;
@@ -205,7 +207,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[9]) {
-		playerShootingSprite[9].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[9].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[9].getPosition().y < -20.0f) {
 			playerShootingSprite[9].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[9] = true;
@@ -215,7 +217,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[10]) {
-		playerShootingSprite[10].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[10].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[10].getPosition().y < -20.0f) {
 			playerShootingSprite[10].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[10] = true;
@@ -225,7 +227,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[11]) {
-		playerShootingSprite[11].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[11].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[11].getPosition().y < -20.0f) {
 			playerShootingSprite[11].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[11] = true;
@@ -235,7 +237,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[12]) {
-		playerShootingSprite[12].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[12].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[12].getPosition().y < -20.0f) {
 			playerShootingSprite[12].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[12] = true;
@@ -245,7 +247,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[13]) {
-		playerShootingSprite[13].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[13].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[13].getPosition().y < -20.0f) {
 			playerShootingSprite[13].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[13] = true;
@@ -255,7 +257,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[14]) {
-		playerShootingSprite[14].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[14].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[14].getPosition().y < -20.0f) {
 			playerShootingSprite[14].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[14] = true;
@@ -265,7 +267,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[15]) {
-		playerShootingSprite[15].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[15].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[15].getPosition().y < -20.0f) {
 			playerShootingSprite[15].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[15] = true;
@@ -275,7 +277,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[16]) {
-		playerShootingSprite[16].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[16].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[16].getPosition().y < -20.0f) {
 			playerShootingSprite[16].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[16] = true;
@@ -285,7 +287,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[17]) {
-		playerShootingSprite[17].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[17].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[17].getPosition().y < -20.0f) {
 			playerShootingSprite[17].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[17] = true;
@@ -295,7 +297,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[18]) {
-		playerShootingSprite[18].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[18].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[18].getPosition().y < -20.0f) {
 			playerShootingSprite[18].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[18] = true;
@@ -305,7 +307,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[19]) {
-		playerShootingSprite[19].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[19].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[19].getPosition().y < -20.0f) {
 			playerShootingSprite[19].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[19] = true;
@@ -315,7 +317,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[20]) {
-		playerShootingSprite[20].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[20].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[20].getPosition().y < -20.0f) {
 			playerShootingSprite[20].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[20] = true;
@@ -325,7 +327,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[21]) {
-		playerShootingSprite[21].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[21].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[21].getPosition().y < -20.0f) {
 			playerShootingSprite[21].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[21] = true;
@@ -335,7 +337,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[22]) {
-		playerShootingSprite[22].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[22].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[22].getPosition().y < -20.0f) {
 			playerShootingSprite[22].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[22] = true;
@@ -345,7 +347,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[23]) {
-		playerShootingSprite[23].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[23].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[23].getPosition().y < -20.0f) {
 			playerShootingSprite[23].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[23] = true;
@@ -355,7 +357,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[24]) {
-		playerShootingSprite[24].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[24].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[24].getPosition().y < -20.0f) {
 			playerShootingSprite[24].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[24] = true;
@@ -365,7 +367,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[25]) {
-		playerShootingSprite[25].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[25].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[25].getPosition().y < -20.0f) {
 			playerShootingSprite[25].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[25] = true;
@@ -375,7 +377,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[26]) {
-		playerShootingSprite[26].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[26].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[26].getPosition().y < -20.0f) {
 			playerShootingSprite[26].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[26] = true;
@@ -385,7 +387,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[27]) {
-		playerShootingSprite[27].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[27].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[27].getPosition().y < -20.0f) {
 			playerShootingSprite[27].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[27] = true;
@@ -395,7 +397,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[28]) {
-		playerShootingSprite[28].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[28].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[28].getPosition().y < -20.0f) {
 			playerShootingSprite[28].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[28] = true;
@@ -405,7 +407,7 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 	}
 
 	if (playerShootingSpriteActive[29]) {
-		playerShootingSprite[29].move(upMovement*sysSpeed*dt);
+		playerShootingSprite[29].move(upMovement*bulletSpeed*dt);
 		if (playerShootingSprite[29].getPosition().y < -20.0f) {
 			playerShootingSprite[29].setPosition(-10.0f, -10.0f);
 			playerShootingSpriteAvailable[29] = true;
@@ -419,43 +421,46 @@ void moveTheBullets(Vector2f upMovement, float dt) {
 void setupStartTexts(int winX, int winY) {
 	scoreText.setFont(font);
 	scoreText.setString("SCORE: " + std::to_string(userScore));
-	scoreText.setCharacterSize(24);
+	scoreText.setCharacterSize(24 * (winX/400));
 	scoreText.setFillColor(Color::Black);
-	scoreText.setStyle(Text::Bold | Text::Underlined);
+	scoreText.setStyle(Text::Bold);
 	scoreText.setPosition((winX/2), 0.0f);
 
 	healthText.setFont(font);
 	healthText.setString("HEALTH: " + std::to_string(userHealth));
-	healthText.setCharacterSize(24);
+	healthText.setCharacterSize(24 * (winX / 400));
 	healthText.setFillColor(Color::Black);
-	healthText.setStyle(Text::Bold | Text::Underlined);
+	healthText.setStyle(Text::Bold);
 	healthText.setPosition(10.0f, 0.0f);
 
 	gameCountDownTimer.setFont(font);
 	gameCountDownTimer.setString("Level " + std::to_string(sysLevel));
-	gameCountDownTimer.setCharacterSize(30);
+	gameCountDownTimer.setCharacterSize(30 * (winX / 400));
 	gameCountDownTimer.setFillColor(Color::Black);
-	gameCountDownTimer.setStyle(Text::Bold | Text::Underlined);
-	gameCountDownTimer.setPosition((winX / 2), (winY / 2));
+	gameCountDownTimer.setStyle(Text::Bold );
+	gameCountDownTimer.setPosition((winX / 2)-50.0f, (winY / 2)-50.0f);
 
 	bulletsAvailableCounter.setFont(font);
 	bulletsAvailableCounter.setString("BULLETS: 30/30");
-	bulletsAvailableCounter.setCharacterSize(24);
+	bulletsAvailableCounter.setCharacterSize(24 * (winX / 400));
 	bulletsAvailableCounter.setFillColor(Color::Black);
-	bulletsAvailableCounter.setStyle(Text::Bold | Text::Underlined);
+	bulletsAvailableCounter.setStyle(Text::Bold);
 	bulletsAvailableCounter.setPosition(10.0f, (winY / 2) + (winY / 4) + (winY / 8));
 
 	enemyBoatsLeft.setFont(font);
 	enemyBoatsLeft.setString("REMAIN: " + std::to_string(userRemaingBoats));
-	enemyBoatsLeft.setCharacterSize(24);
+	enemyBoatsLeft.setCharacterSize(24 * (winX / 400));
 	enemyBoatsLeft.setFillColor(Color::Black);
-	enemyBoatsLeft.setStyle(Text::Bold | Text::Underlined);
+	enemyBoatsLeft.setStyle(Text::Bold);
 	enemyBoatsLeft.setPosition((winX / 2) + 20.0F, (winY / 2) + (winY / 4) + (winY / 8));
 }
 
 void LoadComplete(int winX, int winY) {
-	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!mouseMenuTexture.loadFromFile("res/img/mouse1.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
 	}
 	if (!completeMessageTexture.loadFromFile("res/img/congrats.png")) {
 		throw std::invalid_argument("Loading error with background!");
@@ -468,13 +473,21 @@ void LoadComplete(int winX, int winY) {
 	}
 
 	completeMessage.setPosition((winX / 4), (winY / 16));
+	completeMessage.setScale(winX / 400, winY / 400);
+
 	completeNext.setPosition((winX / 4), (winY /2));
+	completeNext.setScale(winX / 400, winY / 400);
+
 	completeExit.setPosition((winX / 4), (winY / 8) + (winY / 2));
+	completeExit.setScale(winX / 400, winY / 400);
 }
 
 void LoadPause(int winX, int winY) {
-	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!mouseMenuTexture.loadFromFile("res/img/mouse1.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
 	}
 	if (!pauseResumeTexture.loadFromFile("res/img/resume.png")) {
 		throw std::invalid_argument("Loading error with background!");
@@ -484,13 +497,18 @@ void LoadPause(int winX, int winY) {
 	}
 
 	pauseResumeSprite.setPosition((winX / 4), (winY / 4) + (winY / 8));
+	pauseResumeSprite.setScale(winX / 400, winY / 400);
 
 	pauseExitSprite.setPosition((winX / 4), (winY / 2));
+	pauseExitSprite.setScale(winX / 400, winY / 400);
 }
 
 void LoadOpitions(int winX, int winY) {
-	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!mouseMenuTexture.loadFromFile("res/img/mouse1.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
 	}
 	if (!fourOptionTexture.loadFromFile("res/img/four.png")) {
 		throw std::invalid_argument("Loading error with background!");
@@ -521,8 +539,11 @@ void LoadOpitions(int winX, int winY) {
 }
 
 void LoadHighscores(int winX, int winY) {
-	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
+	}
+	if (!mouseMenuTexture.loadFromFile("res/img/mouse1.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
 	}
 	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
 		throw std::invalid_argument("Loading error with font!");
@@ -566,14 +587,13 @@ void LoadHighscores(int winX, int winY) {
 		displayNames[i].setString(names[i]);
 		displayNames[i].setCharacterSize(30 * (winY / 400));
 		displayNames[i].setFillColor(Color::Black);
-		displayNames[i].setPosition((winX / 4), (winY / 4) + (winY / 16) + (i * 35));
+		displayNames[i].setPosition((winX / 4), (winY / 4) + (winY / 16) + ((i * 35)* (winY / 400)));
 
 		displayScores[i].setFont(font);
 		displayScores[i].setString(std::to_string(scores[i]));
 		displayScores[i].setCharacterSize(30 * (winY / 400));
 		displayScores[i].setFillColor(Color::Black);
-		displayScores[i].setPosition((winX / 2) + (winX / 16), (winY / 4) + (winY / 16) + (i * 35));
-
+		displayScores[i].setPosition((winX / 2) + (winX / 16), (winY / 4) + (winY / 16) + ((i * 35)* (winY / 400)));
 		//std::cout << " " << scores[i] << std::endl;
 	}
 
@@ -587,10 +607,16 @@ void LoadHighscores(int winX, int winY) {
 
 	returnSprite.setPosition((winX/4), (winY/8) + (winY/4) + (winY/2));
 	returnSprite.setScale(winX / 400, winY / 400);
+
+	mouseMenuSprite.setPosition((winX / 2), (winY / 2));
+	mouseMenuSprite.setScale(winX / 400, winY / 400);
+	mouseMenuRectangle.setPosition((winX / 2), (winY / 2));
+	mouseMenuRectangle.setSize(Vector2f(10.0f, 10.0f));
+	mouseMenuRectangle.setScale(winX / 400, winY / 400);
 }
 
 void LoadMenu(int winX, int winY) {
-	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
 	}
 	if (!buttonMenuTexture.loadFromFile("res/img/enemy.png")) {
@@ -602,7 +628,7 @@ void LoadMenu(int winX, int winY) {
 	if (!startButtonMenuTexture.loadFromFile("res/img/start.png")) {
 		throw std::invalid_argument("Loading error with button tex!");
 	}
-	if (!mouseMenuTexture.loadFromFile("res/img/smallbullet1.png")) {
+	if (!mouseMenuTexture.loadFromFile("res/img/mouse1.png")) {
 		throw std::invalid_argument("Loading error with button tex!");
 	}
 	if (!highscoreButtonMenuTexture.loadFromFile("res/img/high.png")) {
@@ -635,26 +661,29 @@ void LoadMenu(int winX, int winY) {
 	exitButtonMenuSprite.setScale(winX / 400, winY / 400);
 
 	mouseMenuSprite.setPosition((winX / 2), (winY / 2));
+	mouseMenuSprite.setScale(winX / 400, winY / 400);
 	mouseMenuRectangle.setPosition((winX / 2), (winY / 2));
 	mouseMenuRectangle.setSize(Vector2f(10.0f, 10.0f));
+	mouseMenuRectangle.setScale(winX / 400, winY / 400);
 
 	if (!buffer.loadFromFile("res/music/boat.wav")) {
 		std::cout << "Error 404" << std::endl;
 	}
 	else { std::cout << "Loadedppp" << std::endl; }
 	sound.setBuffer(buffer);
-	//sound.play();
+	sound.play();
 }
 
 void LoadGameOver(int winX, int winY) {
-	if (!backgroundMenuTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundMenuTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
 	}
-
+	if (!mouseMenuTexture.loadFromFile("res/img/mouse1.png")) {
+		throw std::invalid_argument("Loading error with button tex!");
+	}
 	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
 		throw std::invalid_argument("Loading error with font!");
 	}
-
 	if (!gameOverTexture.loadFromFile("res/img/gameover.png")) {
 		throw std::invalid_argument("Loading error with pic!");
 	}
@@ -671,9 +700,9 @@ void LoadGameOver(int winX, int winY) {
 	
 	nameInputOutput.setFont(font);
 	nameInputOutput.setString("");
-	nameInputOutput.setCharacterSize(30);
+	nameInputOutput.setCharacterSize(24 * (winX / 400));
 	nameInputOutput.setFillColor(Color::Black);
-	nameInputOutput.setStyle(Text::Bold | Text::Underlined);
+	nameInputOutput.setStyle(Text::Bold);
 
 	gameOverSprite.setPosition((winX /4), (winY / 8));
 	gameOverSprite.setScale(winX / 400, winY / 400);
@@ -684,7 +713,7 @@ void LoadGameOver(int winX, int winY) {
 	confirmSprite.setPosition((winX / 4), (winY / 2) + (winY / 4));
 	confirmSprite.setScale(winX / 400, winY / 400);
 
-	nameInputOutput.setPosition((winX / 4) + (winX / 8), (winY / 2));
+	nameInputOutput.setPosition((winX / 4) - (winX / 8) + (winX / 16), (winY / 2));
 	nameInputOutput.setScale(winX / 400, winY / 400);
 }
 
@@ -692,15 +721,12 @@ void LoadStart(int winX, int winY) {
 	if (!playerSpriteTexture.loadFromFile("res/img/pirate.png")) {
 		throw std::invalid_argument("Loading error with sprite!");
 	}
-
-	if (!backgroundTexture.loadFromFile("res/img/background1.png")) {
+	if (!backgroundTexture.loadFromFile("res/img/background3.png")) {
 		throw std::invalid_argument("Loading error with background!");
 	}
-
 	if (!policeSpriteTexture.loadFromFile("res/img/police.png")) {
 		throw std::invalid_argument("Loading error with poliz!");
 	}
-
 	if (!armySpriteTexture.loadFromFile("res/img/army1.png")) {
 		throw std::invalid_argument("Loading error with army!");
 	}
@@ -713,19 +739,19 @@ void LoadStart(int winX, int winY) {
 	if (!playerShootingTexture.loadFromFile("res/img/smallbullet1.png")) {
 		throw std::invalid_argument("Loading error with gunfire!");
 	}
-
 	if (!powerupChestTexture.loadFromFile("res/img/chest1.png")) {
 		throw std::invalid_argument("Loading error with chest!");
 	}
-
 	if (!font.loadFromFile("res/fonts/Treamd.ttf")) {
 		throw std::invalid_argument("Loading error with font!");
 	}
 
 	// Set the start position of the user sprite
 	playerSprite.setPosition((winX/2), (winY/ 2) + (winY/4));
+	playerSprite.setScale(winX / 400, winY / 400);
 	playerSpriteRectangle.setPosition((winX / 2), (winY / 2) + (winY / 4));
 	playerSpriteRectangle.setSize(Vector2f(41.0f, 50.0f));
+	playerSpriteRectangle.setScale(winX / 400, winY / 400);
 
 	float startingDistancesY[100];
 	for (int i = 0; i < 100; i++) {
@@ -739,9 +765,11 @@ void LoadStart(int winX, int winY) {
 	for (int i = 0; i < sysPolice; i++) {
 		int x = rand() % 5;
 		int y = rand() % sysPolice * 2;
-		policeBoatSprite[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+		policeBoatSprite[i].setPosition(Vector2f(startingDistancesX[x] * (winX/400), -(startingDistancesY[y])));
+		policeBoatSprite[i].setScale(winX / 400, winY / 400);
 		policeBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
-		policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+		policeBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x] * (winX / 400), -(startingDistancesY[y])));
+		policeBoatRectangle[i].setScale(winX / 400, winY / 400);
 		policeBoatHealth[i] = 0;
 	}
 
@@ -749,35 +777,41 @@ void LoadStart(int winX, int winY) {
 	for (int i = 0; i < sysArmy; i++) {
 		int x = rand() % 5;
 		int y = rand() % sysArmy * 2;
-		armyBoatSprite[i].setPosition(startingDistancesX[x], -(startingDistancesY[y]));
-		//std::cout << "Army Boat deployed at: " << startingDistancesX[x] << " -" << startingDistancesY[y] << std::endl;
+		armyBoatSprite[i].setPosition(startingDistancesX[x] * (winX / 400), -(startingDistancesY[y]));
+		armyBoatSprite[i].setScale(winX / 400, winY / 400);
 		armyBoatRectangle[i].setSize(Vector2f(41.0f, 50.0f));
-		armyBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+		armyBoatRectangle[i].setPosition(Vector2f(startingDistancesX[x] * (winX / 400), -(startingDistancesY[y])));
+		armyBoatRectangle[i].setScale(winX / 400, winY / 400);
 		armyBoatHealth[i] = 0;
 	}
 
 	// Set the position to off the players bullets of screen
 	for (int i = 0; i < 30; i++) {
-		playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+		playerShootingSprite[i].setPosition(-320.0f, -320.0f);
+		playerShootingSprite[i].setScale(winX / 400, winY / 400);
 		playerShootingSpriteAvailable[i] = true;
 	}
 
 	for (int i = 0; i < sysPolice; i++) {
-		policeBoatShootingSprite[i].setPosition(-1300.0f, -10.0f);
+		policeBoatShootingSprite[i].setPosition(-1300.0f, -320.0f);
+		policeBoatShootingSprite[i].setScale(winX / 400, winY / 400);
 		isPoliceBulletActive[i] = false;
 	}
 
 	for (int i = 0; i < sysArmy; i++) {
-		armyBoatShootingSprite[i].setPosition(-1300.0f, -10.0f);
+		armyBoatShootingSprite[i].setPosition(-1300.0f, -320.0f);
+		armyBoatShootingSprite[i].setScale(winX / 400, winY / 400);
 		isArmyBulletActive[i] = false;
 	}
 
 	int x = rand() % 5;
 	int y = rand() % sysArmy * 2;
 
-	powerupChestSprite.setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
-	powerupChestRectangle.setPosition(Vector2f(startingDistancesX[x], -(startingDistancesY[y])));
+	powerupChestSprite.setPosition(Vector2f(startingDistancesX[x] * (winX / 400), -(startingDistancesY[y])));
+	powerupChestSprite.setScale(winX / 400, winY / 400);
+	powerupChestRectangle.setPosition(Vector2f(startingDistancesX[x] * (winX / 400), -(startingDistancesY[y])));
 	powerupChestRectangle.setSize(Vector2f(50.0f, 50.0f));
+	powerupChestRectangle.setScale(winX / 400, winY / 400);
 
 	// Variables that reset each round
 	if (newGame) {
@@ -801,6 +835,25 @@ void LoadStart(int winX, int winY) {
 void UpdateGameOver() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
+
+	Vector2f move;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -8.0f) {
+		move.x--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 8.0f) {
+		move.x++;
+	}
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
+		move.y--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 8.0f) {
+		move.y++;
+	}
+	mouseMenuSprite.move(move*100.0f*dt);
+	mouseMenuRectangle.move(move*100.0f*dt);
 
 	if (nameInput.getSize() < 6) {
 		if (!key[0] && (Keyboard::isKeyPressed(Keyboard::Space))) {
@@ -1053,11 +1106,11 @@ void UpdateMenu() {
 
 	Vector2f move;
 
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -2.0f) {
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -8.0f) {
 		move.x--;
 	}
 
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 4.0f) {
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 8.0f) {
 		move.x++;
 	}
 	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
@@ -1074,25 +1127,101 @@ void UpdateMenu() {
 void UpdateOpitions() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
+
+	Vector2f move;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -8.0f) {
+		move.x--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 8.0f) {
+		move.x++;
+	}
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
+		move.y--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 8.0f) {
+		move.y++;
+	}
+	mouseMenuSprite.move(move*100.0f*dt);
+	mouseMenuRectangle.move(move*100.0f*dt);
 }
 
 void UpdatePause() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
+
+	Vector2f move;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -8.0f) {
+		move.x--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 8.0f) {
+		move.x++;
+	}
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
+		move.y--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 8.0f) {
+		move.y++;
+	}
+	mouseMenuSprite.move(move*100.0f*dt);
+	mouseMenuRectangle.move(move*100.0f*dt);
 }
 
 void UpdateComplete() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
+
+	Vector2f move;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -8.0f) {
+		move.x--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 8.0f) {
+		move.x++;
+	}
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
+		move.y--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 8.0f) {
+		move.y++;
+	}
+	mouseMenuSprite.move(move*100.0f*dt);
+	mouseMenuRectangle.move(move*100.0f*dt);
 }
 
 void UpdateHighscores() {
 	static sf::Clock clock;
 	float dt = clock.restart().asSeconds();
+
+	Vector2f move;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -8.0f) {
+		move.x--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::X) > 8.0f) {
+		move.x++;
+	}
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) < -8.0f) {
+		move.y--;
+	}
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::Y) > 8.0f) {
+		move.y++;
+	}
+	mouseMenuSprite.move(move*100.0f*dt);
+	mouseMenuRectangle.move(move*100.0f*dt);
 }
 
 // Update method which stores a clock and handles the movement of the default user sprite - called while window is open
-void UpdateStart() {
+void UpdateStart(int winX, int winY) {
   // Create clocks
   static sf::Clock clock;
   static sf::Clock gameClock;
@@ -1111,7 +1240,7 @@ void UpdateStart() {
   Vector2f upMovement;
 
   // Once the game has been going for 5 seconds, hide label
-  if (gameTime > 0.5f) {
+  if (gameTime > 1.0f) {
 	  gameCountDownTimer.setString("");
   }
 
@@ -1123,7 +1252,7 @@ void UpdateStart() {
 
   // If keys are pressed then move users sprite
   if (!leftNotAllowed) {
-	  if (Keyboard::isKeyPressed(Keyboard::Left) || sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -2.0f) {
+	  if (Keyboard::isKeyPressed(Keyboard::Left) || sf::Joystick::getAxisPosition(0, sf::Joystick::X) < -4.0f) {
 		  move.x--;
 	  }
   }
@@ -1133,8 +1262,8 @@ void UpdateStart() {
 	  }
   }
   // Update player movement
-  playerSprite.move(move*100.0f*dt);
-  playerSpriteRectangle.move(move*100.0f*dt);
+  playerSprite.move(move*150.0f*dt);
+  playerSpriteRectangle.move(move*150.0f*dt);
 
   // If space is not currently pressed
   if (isSpacePressed == false) {
@@ -1150,7 +1279,7 @@ void UpdateStart() {
 				  // Set bullet to active
 				  playerShootingSpriteActive[i] = true;
 				  // Set position to boat
-				  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 20.0f, (playerSprite.getPosition().y) - 20.0f);
+				  playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + (20.0f * (winX/400)) , (playerSprite.getPosition().y) - (20.0f * (winX / 400)));
 				  // Set bullet to not available
 				  playerShootingSpriteAvailable[i] = false;
 				  // Lower the users bullet count
@@ -1181,7 +1310,7 @@ void UpdateStart() {
 					// Set bullet to active
 					playerShootingSpriteActive[i] = true;
 					// Set position to boat
-					playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + 20.0f, (playerSprite.getPosition().y) - 20.0f);
+					playerShootingSprite[i].setPosition((playerSprite.getPosition().x) + (20.0f * (winX / 400)), (playerSprite.getPosition().y) - (20.0f * (winX / 400)));
 					// Set bullet to not available
 					playerShootingSpriteAvailable[i] = false;
 					// Lower the users bullet count
@@ -1198,21 +1327,13 @@ void UpdateStart() {
 		isControllerButtonPressed = false;
 	}
 
-	/*
-	if (!sf::Joystick::isButtonPressed(0, sf::Joystick::X)) {
-		isSpacePressed = false;
-		isControllerButtonPressed
-	}
-	*/
-
 	// Method which updates the bullets position
 	moveTheBullets(upMovement, dt);
 
 	// For loop which moves the police boats
 	for (int i = 0; i < sysPolice; i++) {
-		if (policeBoatSprite[i].getPosition().x > 29.0f) {
+		if (policeBoatSprite[i].getPosition().x > (29.0f * (winX / 400))) {
 			policeBoatSprite[i].move(Vector2f(0.0f, sysSpeed*dt));
-			//std::cout << policeBoatSprite[1].getPosition().y << std::endl;
 			policeBoatRectangle[i].move(Vector2f(0.0f, sysSpeed*dt));
 		}
 	}  
@@ -1235,7 +1356,7 @@ void UpdateStart() {
 				// Deducted 5 health
 				policeBoatHealth[j] -= 5;
 				// Reset bullet posotion
-				playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+				playerShootingSprite[i].setPosition(-350.0f, -350.0f);
 				// Make bullet available
 				playerShootingSpriteAvailable[i] = true;
 				// Add one to user bullets 
@@ -1273,7 +1394,7 @@ enloop:
 				// Deducted 5 health
 				armyBoatHealth[j] -= 5;
 				// Reset bullet posotion
-				playerShootingSprite[i].setPosition(-10.0f, -10.0f);
+				playerShootingSprite[i].setPosition(-390.0f, -390.0f);
 				// Make bullet available
 				playerShootingSpriteAvailable[i] = true;
 				// Add one to user bullets 
@@ -1307,32 +1428,32 @@ enloop1:
 	for (int i = 0; i < 30; i++) {
 		if (powerupChestRectangle.getGlobalBounds().contains(playerShootingSprite[i].getPosition())) {
 			std::cout << "Powerup obtained!" << std::endl;
-			powerupChestSprite.setPosition(-90.0f, -90.0f);
-			powerupChestRectangle.setPosition(-90.0f, -90.0f);
+			powerupChestSprite.setPosition(-290.0f, -290.0f);
+			powerupChestRectangle.setPosition(-290.0f, -290.0f);
 			userHealth += 25;
-			playerShootingSprite[i].setPosition(Vector2f(-10.0f, -10.0f));
+			playerShootingSprite[i].setPosition(Vector2f(-440.0f, -440.0f));
 		}
 	}
 
 	// If player collides with powerup
 	if (playerSpriteRectangle.getGlobalBounds().intersects(powerupChestRectangle.getGlobalBounds())) {
-		powerupChestSprite.setPosition(-90.0f, -90.0f);
-		powerupChestRectangle.setPosition(-90.0f, -90.0f);
+		powerupChestSprite.setPosition(-290.0f, -290.0f);
+		powerupChestRectangle.setPosition(-290.0f, -290.0f);
 		userHealth += 10;
 	}
 
   // If the police boats get off screen
   for (int i = 0; i < sysPolice; i++) {
-	  if (policeBoatSprite[i].getPosition().y > 400.0f && policeBoatSprite[i].getPosition().x > 29.0f)
+	  if (policeBoatSprite[i].getPosition().y > (400.0f * (winY/400)) && policeBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
 		  std::cout << "The convoy has been hit!!! -10 Health!" << std::endl;
 		  // Lower users health
 		  userHealth -= 10;
 		  // Reset boat position
-		  policeBoatSprite[i].setPosition(-70.0f, -10.0f);
+		  policeBoatSprite[i].setPosition(-120.0f, -490.0f);
 		  // Reset rectangle
-		  policeBoatRectangle[i].setPosition(-70.0f, -10.0f);
+		  policeBoatRectangle[i].setPosition(-120.0f, -490.0f);
 		  // Lower counter
 		  userRemaingBoats -= 1;
 	  }
@@ -1340,16 +1461,16 @@ enloop1:
 
   // If the army boats get off screen
   for (int i = 0; i < sysArmy; i++) {
-	  if (armyBoatSprite[i].getPosition().y > 400.0f && armyBoatSprite[i].getPosition().x > 29.0f)
+	  if (armyBoatSprite[i].getPosition().y > (400.0f * (winY / 400)) && armyBoatSprite[i].getPosition().x > 29.0f)
 	  {
 		  // Print
 		  std::cout << "The convoy has been hit!!! -20 Health!" << std::endl;
 		  // Lower users health
 		  userHealth -= 20;
 		  // Reset boat position
-		  armyBoatSprite[i].setPosition(-70.0f, -10.0f);
+		  armyBoatSprite[i].setPosition(-120.0f, -10.0f);
 		  // Reset rectangle
-		  armyBoatRectangle[i].setPosition(-70.0f, -10.0f);
+		  armyBoatRectangle[i].setPosition(-120.0f, -10.0f);
 		  // Lower counter
 		  userRemaingBoats -= 1;
 	  }
@@ -1358,15 +1479,15 @@ enloop1:
   // If a police boat and player boat direct hit - for all police boats
   for (int i = 0; i < sysPolice; i++) {
 	  // If the police boat contains player boat then - 20 is added as the midpoint
-	  if (policeBoatRectangle[i].getGlobalBounds().contains(playerSprite.getPosition()+Vector2f(20.0f, 0.0f))) {
+	  if (policeBoatRectangle[i].getGlobalBounds().intersects(playerSpriteRectangle.getGlobalBounds())) {
 		  // Print
 		  std::cout << "Direct hit! -50 Helath! 3333" << std::endl;
 		  // Lower users health
 		  userHealth -= 50;
 		  // Reset boat position
-		  policeBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  policeBoatSprite[i].setPosition(-580.0f, -10.0f);
 		  // Reset rectangle
-		  policeBoatRectangle[i].setPosition(-10.0f, -10.0f);
+		  policeBoatRectangle[i].setPosition(-580.0f, -10.0f);
 		  // Lower counter
 		  userRemaingBoats -= 1;
 	  }
@@ -1375,23 +1496,24 @@ enloop1:
   // If a army boat and player boat direct hit - for all police boats
   for (int i = 0; i < sysArmy; i++) {
 	  // If the army boat contains player boat then - 20 is added as the midpoint
-	  if (armyBoatRectangle[i].getGlobalBounds().contains(playerSprite.getPosition() + Vector2f(20.0f, 0.0f))) {
+	  if (armyBoatRectangle[i].getGlobalBounds().intersects(playerSpriteRectangle.getGlobalBounds())) {
 		  // Print
 		  std::cout << "Direct hit! -50 Helath! 4444 " << std::endl;
 		  // Lower users health
 		  userHealth -= 50;
 		  // Reset boat position
-		  armyBoatSprite[i].setPosition(-50.0f, -10.0f);
+		  armyBoatSprite[i].setPosition(-580.0f, -10.0f);
 		  // Reset rectangle
-		  armyBoatRectangle[i].setPosition(-10.0f, -10.0f);
+		  armyBoatRectangle[i].setPosition(-580.0f, -10.0f);
 		  // Lower counter
 		  userRemaingBoats -= 1;
 	  }
   }
 
+  srand(time(0));
+
   // Random array of possible starting positions
   float arr[9] = { 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 80.0f, 90.0f };
-  // Reset random gen
 
   // For all police bullets
   for (int i = 0; i < sysPolice; i++) {
@@ -1402,7 +1524,7 @@ enloop1:
 		  // If police boat is great than random number on y axis and in play
 		  if (policeBoatSprite[i].getPosition().y > arr[starto] && policeBoatSprite[i].getPosition().x > 10.0f) {
 			  // Set the bullet to fire from the boat
-			  policeBoatShootingSprite[i].setPosition(Vector2f((policeBoatSprite[i].getPosition().x) + 18.0f, (policeBoatSprite[i].getPosition().y) + 50.0f));
+			  policeBoatShootingSprite[i].setPosition(Vector2f((policeBoatSprite[i].getPosition().x) + (18.0f* (winX / 400)), (policeBoatSprite[i].getPosition().y) + (50.0f* (winY / 400))));
 			  // Set bullet to active
 			  isPoliceBulletActive[i] = true;
 		  }
@@ -1424,7 +1546,7 @@ enloop1:
 		  // If police boat is great than random number on y axis and in play
 		  if (armyBoatSprite[i].getPosition().y > arr[starto] && armyBoatSprite[i].getPosition().x > 10.0f) {
 			  // Set the bullet to fire from the boat
-			  armyBoatShootingSprite[i].setPosition(Vector2f((armyBoatSprite[i].getPosition().x) + 18.0f, (armyBoatSprite[i].getPosition().y) + 50.0f));
+			  armyBoatShootingSprite[i].setPosition(Vector2f((armyBoatSprite[i].getPosition().x) + (18.0f* (winX / 400)), (armyBoatSprite[i].getPosition().y) + (50.0f * (winX / 400))));
 			  // Set bullet to active
 			  isArmyBulletActive[i] = true;
 		  }
@@ -1446,7 +1568,7 @@ enloop1:
 		  // Lower userHealth by 10
 		  userHealth -= 10;
 		  // Hide missile
-		  policeBoatShootingSprite[i].setPosition(Vector2f(-10.0f, -10.0f));
+		  policeBoatShootingSprite[i].setPosition(Vector2f(-710.0f, -10.0f));
 	  }
   }
 
@@ -1459,7 +1581,7 @@ enloop1:
 		  // Lower userHealth by 10
 		  userHealth -= 10;
 		  // Hide missile
-		  armyBoatShootingSprite[i].setPosition(Vector2f(-10.0f, -10.0f));
+		  armyBoatShootingSprite[i].setPosition(Vector2f(-710.0f, -10.0f));
 	  }
   }
 
@@ -1473,7 +1595,7 @@ enloop1:
   enemyBoatsLeft.setString("REMAIN: " + std::to_string(userRemaingBoats));
   
   // If statement limiting the player to go to far left
-  if (playerSprite.getPosition().x < 25.0f) {
+  if (playerSprite.getPosition().x < (25.0f *(winX / 400))) {
 	  std::cout << "To far left";
 	  leftNotAllowed = true;
   }
@@ -1482,7 +1604,7 @@ enloop1:
   }
 
   // If statement limiting the player from going to far right
-  if (playerSprite.getPosition().x > 330.0f) {
+  if (playerSprite.getPosition().x >(330.0f *(winX / 400))) {
 	  std::cout << "To far right";
 	  rightNotAllowed = true;
   }
@@ -1503,6 +1625,7 @@ void RenderPause(RenderWindow &window) {
 	window.draw(backgroundMenuSprite);
 	window.draw(pauseExitSprite);
 	window.draw(pauseResumeSprite);
+	window.draw(mouseMenuSprite);
 }
 
 // Render method for the complete screen
@@ -1511,6 +1634,7 @@ void RenderComplete(RenderWindow &window) {
 	window.draw(completeMessage);
 	window.draw(completeNext);
 	window.draw(completeExit);
+	window.draw(mouseMenuSprite);
 }
 
 // Render method for the complete screen
@@ -1520,6 +1644,7 @@ void RenderOpitions(RenderWindow &window) {
 	window.draw(eightOptionSprite);
 	window.draw(fullOptionSprite);
 	window.draw(returnOptionSprite);
+	window.draw(mouseMenuSprite);
 }
 
 // Render method for the highscores screen
@@ -1528,6 +1653,7 @@ void RenderHighscores(RenderWindow &window) {
 	window.draw(highscoresSprite);
 	window.draw(namescoreSprite);
 	window.draw(returnSprite);
+	window.draw(mouseMenuSprite);
 
 	for (int i = 0; i < 5; i++) {
 		window.draw(displayNames[i]);
@@ -1554,6 +1680,7 @@ void RenderGameOver(RenderWindow &window) {
 	window.draw(enterNameSprite);
 	window.draw(confirmSprite);
 	window.draw(nameInputOutput);
+	window.draw(mouseMenuSprite);
 }
 
 // Render method for the start screen
@@ -1721,15 +1848,17 @@ int main() {
 			pauseExitRectangle.setPosition((winX / 4), (winY / 2));
 			pauseExitRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
 
-			// If return rectangle is clicked on 
-			if (Mouse::isButtonPressed(Mouse::Left) && pauseResumeSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			// If resume rectangle is clicked on 
+			if ((Mouse::isButtonPressed(Mouse::Left) && pauseResumeSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && pauseResumeSprite.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				// Return user to main menu
 				newLevel = true;
 				gameState = GameStates::STATE_START;
 			}
 
 			// If return rectangle is clicked on 
-			if (Mouse::isButtonPressed(Mouse::Left) && pauseExitSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && pauseExitSprite.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && pauseExitSprite.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				// Return user to main menu
 				gameState = GameStates::STATE_MENU;
 			}
@@ -1774,6 +1903,18 @@ int main() {
 						sysPolice = 25;
 						sysSpeed = 40.0f;
 						sysArmy = 18;
+						userRemaingBoats = sysPolice + sysArmy;
+					}
+					else if (sysLevel == 6) {
+						sysPolice = 30;
+						sysSpeed = 45.0f;
+						sysArmy = 25;
+						userRemaingBoats = sysPolice + sysArmy;
+					}
+					else if (sysLevel == 7) {
+						sysPolice = 30;
+						sysSpeed = 50.0f;
+						sysArmy = 30;
 						userRemaingBoats = sysPolice + sysArmy;
 					}
 					// Load the start method
@@ -1822,7 +1963,7 @@ int main() {
 				if (!userHasNoHealth) {
 					// Start the game and get it going
 					window.clear();
-					UpdateStart();
+					UpdateStart(winX, winY);
 					RenderStart(window);
 					window.display();
 				}
@@ -1833,7 +1974,7 @@ int main() {
 				}
 			}
 
-			if ((event.type == Event::KeyReleased) && (event.key.code == Keyboard::Key::P)) {
+			if (((event.type == Event::KeyReleased) && (event.key.code == Keyboard::Key::P)) || (sf::Joystick::isButtonPressed(0, sf::Joystick::Z))) {
 				std::cout << "P" << std::endl;
 				Sleep(200);
 				gameState = GameStates::STATE_PAUSE;
@@ -1879,7 +2020,8 @@ int main() {
 			returnRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
 
 			// If return rectangle is clicked on 
-			if (Mouse::isButtonPressed(Mouse::Left) && returnRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && returnRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && returnRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				// Return user to main menu
 				nameInput = "";
 				gameState = GameStates::STATE_MENU;
@@ -1918,9 +2060,8 @@ int main() {
 			confirmRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
 			
 			// If confirm rectangle is pressed
-			if (Mouse::isButtonPressed(Mouse::Left) && confirmRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
-				//userHasNoHealth = false;
-				//userHealth = 100;
+			if ((Mouse::isButtonPressed(Mouse::Left) && confirmRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && confirmRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				// For 20
 				for (int i = 0; i < 20; i++) {
 					// Get next avaiable place in array
@@ -1933,6 +2074,7 @@ int main() {
 						break;
 					}
 				}
+				Sleep(400);
 				// Go back to main menu
 				gameState = GameStates::STATE_MENU;
 			}
@@ -1962,7 +2104,8 @@ int main() {
 			completeExitRectangle.setPosition((winX / 4), (winY / 8) + (winY / 2));
 			completeExitRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
 
-			if (Mouse::isButtonPressed(Mouse::Left) && completeNextRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && completeNextRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && completeNextRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))){
 				hasCountDownBeenCalled = false;
 				hasLoadStartBeenCalled = false;
 				levelComplete = false;
@@ -1970,7 +2113,8 @@ int main() {
 				gameState = GameStates::STATE_START;
 			}
 
-			if (Mouse::isButtonPressed(Mouse::Left) && completeExitRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && completeExitRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && completeExitRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				userHasNoHealth = false;
 				userHealth = 100;
 				Sleep(200);
@@ -2012,7 +2156,8 @@ int main() {
 			returnOptionRectangle.setPosition((winX / 4), (winY / 2) + (winY / 8));
 			returnOptionRectangle.setSize(Vector2f((winX / 2), (winY / 8)));
 
-			if (Mouse::isButtonPressed(Mouse::Left) && fourOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && fourOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && fourOptionRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				std::cout << "four" << std::endl;
 				window.create(VideoMode(400, 400), "Pirates of the Firth of Forth!");
 				winX = 400;
@@ -2024,7 +2169,8 @@ int main() {
 				LoadGameOver(winX, winY);
 			}
 
-			if (Mouse::isButtonPressed(Mouse::Left) && eightOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && eightOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && eightOptionRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				std::cout << "eight" << std::endl;
 				window.create(VideoMode(800, 800), "Pirates of the Firth of Forth!");
 				winX = 800;
@@ -2036,7 +2182,8 @@ int main() {
 				LoadGameOver(winX, winY);
 			}
 
-			if (Mouse::isButtonPressed(Mouse::Left) && fullOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && fullOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && fullOptionRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				std::cout << "full" << std::endl;
 				window.create(VideoMode(1920.0f, 1080.0f), "Pirates of the Firth of Forth!", Style::Fullscreen);	
 				winX = 1920;
@@ -2048,7 +2195,8 @@ int main() {
 				LoadGameOver(winX, winY);
 			}
 
-			if (Mouse::isButtonPressed(Mouse::Left) && returnOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) {
+			if ((Mouse::isButtonPressed(Mouse::Left) && returnOptionRectangle.getGlobalBounds().contains(Vector2f(Mouse::getPosition(window)))) ||
+				(sf::Joystick::isButtonPressed(0, sf::Joystick::X)) && returnOptionRectangle.getGlobalBounds().contains(Vector2f(mouseMenuRectangle.getPosition()))) {
 				std::cout << "Ret" << std::endl;
 				Sleep(200);
 				gameState = GameStates::STATE_MENU;
